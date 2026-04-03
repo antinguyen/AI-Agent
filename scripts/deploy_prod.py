@@ -93,8 +93,17 @@ run(client, f'cd {REMOTE_BASE} && docker compose up -d 2>&1', 120)
 print('\n--- STEP 4: Container status ---')
 run(client, 'docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"', 15)
 
-print('\n--- STEP 5: Backend health ping ---')
-run(client, "curl -sf 'http://localhost:8080/api/v1/products?page=0&size=1' -o /dev/null && echo BACKEND_OK || echo BACKEND_FAIL", 15)
+print('\n--- STEP 5: Backend health ping (wait up to 60s for Spring Boot) ---')
+run(
+    client,
+    "for i in $(seq 1 12); do "
+    "  curl -sf 'http://localhost:8080/api/v1/products?page=0&size=1' -o /dev/null 2>/dev/null "
+    "  && echo BACKEND_OK && break; "
+    "  echo \"Waiting for backend... attempt $i/12\"; "
+    "  sleep 5; "
+    "done || echo BACKEND_FAIL",
+    75,
+)
 
 print('\n--- STEP 6: Frontend health ping ---')
 run(client, 'curl -sf http://localhost/ -o /dev/null && echo FRONTEND_OK || echo FRONTEND_FAIL', 10)
