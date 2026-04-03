@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.7.1] - 2026-04-03
+
+### Release Validation
+- Xac nhan smoke suite V21 PASS tren moi truong deploy `http://192.168.1.200:8080`.
+- `MULTI_ORDER_SMOKE_RESULT=PASS`: tao don nhieu san pham, confirm don thanh cong.
+- `VAT_ASSERT_SMOKE_RESULT=PASS`: tong tien expected = actual, `delta=0.00`.
+- `V21_SUITE_RESULT=PASS`.
+
+### Scope Covered
+- Frontend UX tao don nhieu san pham: nut "+ Them san pham" ro rang + hien thi validation theo tung dong.
+- Backend an toan du lieu: aggregate duplicate product lines server-side trong `SalesOrderService`.
+- Integration tests bo sung cho multi-product va duplicate-line aggregation.
+
+---
+
 ## [2.7.0] - 2026-04-02
 
 ### Highlights
