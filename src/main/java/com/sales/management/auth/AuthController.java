@@ -2,6 +2,7 @@ package com.sales.management.auth;
 
 import com.sales.management.auth.dto.AuthResponse;
 import com.sales.management.auth.dto.LoginRequest;
+import com.sales.management.auth.dto.PublicRegisterRequest;
 import com.sales.management.auth.dto.RefreshTokenRequest;
 import com.sales.management.auth.dto.RegisterRequest;
 import jakarta.validation.Valid;
@@ -20,7 +21,7 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
+    public AuthResponse register(@Valid @RequestBody PublicRegisterRequest request) {
         return authService.register(request);
     }
 

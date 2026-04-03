@@ -2,6 +2,7 @@ package com.sales.management.auth;
 
 import com.sales.management.auth.dto.AuthResponse;
 import com.sales.management.auth.dto.LoginRequest;
+import com.sales.management.auth.dto.PublicRegisterRequest;
 import com.sales.management.auth.dto.RefreshTokenRequest;
 import com.sales.management.auth.dto.RegisterRequest;
 import com.sales.management.common.exception.BusinessRuleException;
@@ -48,17 +49,12 @@ public class AuthService implements UserDetailsService {
     }
 
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(PublicRegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
             throw new DuplicateResourceException("Username already taken: " + request.username());
         }
 
-        UserRole role;
-        try {
-            role = UserRole.valueOf(request.role());
-        } catch (IllegalArgumentException e) {
-            throw new BusinessRuleException("Invalid role: " + request.role());
-        }
+        UserRole role = UserRole.STAFF;
 
         AppUser user = new AppUser();
         user.setUsername(request.username());
