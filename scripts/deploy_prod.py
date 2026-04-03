@@ -94,7 +94,7 @@ print('\n--- STEP 4: Container status ---')
 run(client, 'docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"', 15)
 
 print('\n--- STEP 5: Backend health ping ---')
-run(client, 'curl -sf http://localhost:8080/api/v1/products?page=0&size=1 -o /dev/null && echo BACKEND_OK || echo BACKEND_FAIL', 15)
+run(client, "curl -sf 'http://localhost:8080/api/v1/products?page=0&size=1' -o /dev/null && echo BACKEND_OK || echo BACKEND_FAIL", 15)
 
 print('\n--- STEP 6: Frontend health ping ---')
 run(client, 'curl -sf http://localhost/ -o /dev/null && echo FRONTEND_OK || echo FRONTEND_FAIL', 10)

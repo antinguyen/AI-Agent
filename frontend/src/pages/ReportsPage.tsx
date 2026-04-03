@@ -18,6 +18,16 @@ function toIsoDate(date: Date): string {
   return date.toISOString().slice(0, 10)
 }
 
+function toFileTimestamp(date: Date): string {
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  const hh = String(date.getHours()).padStart(2, '0')
+  const mi = String(date.getMinutes()).padStart(2, '0')
+  const ss = String(date.getSeconds()).padStart(2, '0')
+  return `${yyyy}${mm}${dd}_${hh}${mi}${ss}`
+}
+
 function getDatePresetRange(preset: 'TODAY' | 'LAST_7_DAYS' | 'THIS_MONTH') {
   const now = new Date()
   if (preset === 'TODAY') {
@@ -58,11 +68,12 @@ export default function ReportsPage() {
 
   const pageError = (revenueError || topError || summaryError) as { response?: { data?: { message?: string } } } | undefined
   const pageErrorMessage = pageError?.response?.data?.message ?? 'Không thể tải dữ liệu báo cáo.'
+  const isInvalidDateRange = from > to
 
   const statuses = useMemo(() => Object.entries(summary?.countByStatus ?? {}), [summary])
 
   const exportExcel = async () => {
-    if (from > to) {
+    if (isInvalidDateRange) {
       showToast({ tone: 'error', title: 'Khoảng ngày không hợp lệ', message: 'Từ ngày phải nhỏ hơn hoặc bằng đến ngày.' })
       return
     }
@@ -77,7 +88,8 @@ export default function ReportsPage() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `orders-report-${from}_to_${to}.xlsx`
+      const ts = toFileTimestamp(new Date())
+      a.download = `orders-report-${from}_to_${to}-${ts}.xlsx`
       document.body.appendChild(a)
       a.click()
       a.remove()
@@ -110,8 +122,17 @@ export default function ReportsPage() {
             <label className="text-sm font-medium text-gray-700">Đến ngày</label>
             <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm" />
           </div>
-          <button onClick={exportExcel} disabled={exporting} className="rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-60">Export Excel</button>
+          <button
+            onClick={exportExcel}
+            disabled={exporting || isInvalidDateRange}
+            className="rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-60"
+          >
+            {exporting ? 'Đang xuất Excel...' : 'Export Excel'}
+          </button>
         </div>
+        {isInvalidDateRange && (
+          <p className="text-sm text-rose-600">Khoảng ngày không hợp lệ: Từ ngày phải nhỏ hơn hoặc bằng đến ngày.</p>
+        )}
         <div className="flex flex-wrap gap-2">
           <button
             type="button"

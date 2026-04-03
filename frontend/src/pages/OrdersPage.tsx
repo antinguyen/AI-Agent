@@ -46,6 +46,14 @@ type BulkOrderFailureDetail = {
   reason: string
 }
 
+type BulkFailureInsight = {
+  key: string
+  label: string
+  count: number
+  recommendation: string
+  toneClass: string
+}
+
 type BulkFailureSeverity = 'critical' | 'high' | 'medium' | 'normal'
 
 type BulkFailureSortOption = 'ORDER_ID_ASC' | 'ORDER_ID_DESC' | 'STATUS_ASC' | 'STATUS_DESC' | 'SEVERITY_DESC'
@@ -138,6 +146,40 @@ function bulkFailureRowClass(item: BulkOrderFailureDetail): string {
   if (severity === 'high') return 'bg-amber-50/60'
   if (severity === 'medium') return 'bg-sky-50/50'
   return ''
+}
+
+function resolveBulkFailureCategory(item: BulkOrderFailureDetail): Omit<BulkFailureInsight, 'count'> {
+  const reason = item.reason.toLowerCase()
+  if (item.orderStatus === 'NOT_FOUND' || reason.includes('not found')) {
+    return {
+      key: 'NOT_FOUND',
+      label: 'Đơn không tồn tại',
+      recommendation: 'Làm mới danh sách, bỏ các đơn đã bị xoá hoặc kiểm tra lại bộ lọc trước khi chạy lại.',
+      toneClass: 'border-rose-200 bg-rose-50 text-rose-700',
+    }
+  }
+  if (reason.includes('insufficient') || reason.includes('stock') || reason.includes('tồn')) {
+    return {
+      key: 'STOCK',
+      label: 'Thiếu tồn kho',
+      recommendation: 'Bổ sung tồn kho hoặc tách nhóm đơn theo kho/sản phẩm rồi xử lý lại theo từng cụm.',
+      toneClass: 'border-amber-200 bg-amber-50 text-amber-700',
+    }
+  }
+  if (reason.includes('invalid') || reason.includes('không hợp lệ')) {
+    return {
+      key: 'INVALID_STATE',
+      label: 'Sai trạng thái đơn',
+      recommendation: 'Kiểm tra trạng thái hiện tại của đơn và chỉ chạy bulk action tương thích với trạng thái đó.',
+      toneClass: 'border-sky-200 bg-sky-50 text-sky-700',
+    }
+  }
+  return {
+    key: 'OTHER',
+    label: 'Lý do khác',
+    recommendation: 'Mở chi tiết từng đơn để đối chiếu quy tắc nghiệp vụ trước khi thử lại.',
+    toneClass: 'border-stone-200 bg-stone-50 text-stone-700',
+  }
 }
 
 function getFulfillmentStatus(order: Order, shipment?: Shipment): FulfillmentStatus | null {
@@ -612,6 +654,20 @@ export default function OrdersPage() {
     return list
   }, [bulkFailureSort, filteredBulkFailureDetails])
 
+  const bulkFailureInsights = useMemo(() => {
+    const insightMap = new Map<string, BulkFailureInsight>()
+    for (const item of filteredBulkFailureDetails) {
+      const category = resolveBulkFailureCategory(item)
+      const current = insightMap.get(category.key)
+      if (!current) {
+        insightMap.set(category.key, { ...category, count: 1 })
+        continue
+      }
+      current.count += 1
+    }
+    return [...insightMap.values()].sort((a, b) => b.count - a.count)
+  }, [filteredBulkFailureDetails])
+
   useEffect(() => {
     setSelectedOrderIds([])
   }, [statusFilter, fulfillmentFilter, fromDate, toDate, preference.tablePageSize])
@@ -764,7 +820,6 @@ export default function OrdersPage() {
       const failCount = result.failed
 
       await qc.invalidateQueries({ queryKey: ['orders'] })
-      setSelectedOrderIds([])
 
       if (successCount > 0) {
         showToast({
@@ -774,7 +829,12 @@ export default function OrdersPage() {
             : `Đã huỷ ${successCount} đơn`,
         })
       }
+
       if (failCount > 0) {
+        const failedIds = result.failedOrderIds.length > 0
+          ? result.failedOrderIds
+          : result.failureDetails.map((item) => item.orderId)
+        setSelectedOrderIds(failedIds)
         setBulkFailureDetails(result.failureDetails)
         setShowBulkFailureModal(true)
         const failurePreview = result.failureDetails
@@ -784,9 +844,17 @@ export default function OrdersPage() {
         showToast({
           tone: 'error',
           title: `${failCount} đơn xử lý thất bại`,
-          message: failurePreview || 'Vui lòng thử lại hoặc kiểm tra trạng thái từng đơn.',
+          message: failurePreview || 'Đã giữ lại danh sách đơn lỗi để bạn xử lý hoặc thử lại nhanh.',
         })
+      } else {
+        setSelectedOrderIds([])
       }
+    } catch {
+      showToast({
+        tone: 'error',
+        title: 'Không thể xử lý hàng loạt',
+        message: 'Yêu cầu bulk action thất bại, vui lòng thử lại sau ít phút.',
+      })
     } finally {
       setBulkProcessing(false)
     }
@@ -1243,6 +1311,24 @@ export default function OrdersPage() {
           maxWidthClassName="max-w-2xl"
         >
           <div className="space-y-3">
+            {bulkFailureInsights.length > 0 && (
+              <div className="space-y-2 rounded-2xl border border-stone-200 bg-stone-50/80 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Gợi ý xử lý nhanh</p>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {bulkFailureInsights.map((insight) => (
+                    <div key={insight.key} className="rounded-xl border border-stone-200 bg-white px-3 py-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-gray-700">{insight.label}</span>
+                        <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${insight.toneClass}`}>
+                          {insight.count} đơn
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-600">{insight.recommendation}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs text-gray-500">
                 Tổng lỗi: <span className="font-semibold text-gray-700">{filteredBulkFailureDetails.length}</span>

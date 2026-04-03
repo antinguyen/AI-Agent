@@ -11,6 +11,16 @@ import PageHero from '../components/ui/PageHero'
 import PaginationBar from '../components/ui/PaginationBar'
 import { useAuth } from '../contexts/AuthContext'
 
+const MAX_IMAGE_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024
+const MAX_IMPORT_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
 function ProductForm({ defaultValues, onSubmit, isPending }: {
   defaultValues?: Partial<ProductCreateRequest>
   onSubmit: (d: ProductCreateRequest) => void
@@ -31,6 +41,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
   const [options, setOptions] = useState<ProductOptions | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(defaultValues?.imageUrl ?? null)
   const currencyCode = watch('currencyCode')
   const imageUrl = watch('imageUrl')
 
@@ -52,8 +63,27 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
     }
   }, [currencyCode, currencyMap, setValue])
 
+  useEffect(() => {
+    if (!imageUrl) {
+      setUploadPreviewUrl(null)
+      return
+    }
+    setUploadPreviewUrl(imageUrl)
+  }, [imageUrl])
+
   const handleImageUpload = async (file?: File) => {
     if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Tệp đã chọn không phải ảnh hợp lệ. Vui lòng chọn PNG, JPG, WEBP...')
+      return
+    }
+    if (file.size > MAX_IMAGE_UPLOAD_SIZE_BYTES) {
+      setUploadError(`Ảnh vượt quá ${formatFileSize(MAX_IMAGE_UPLOAD_SIZE_BYTES)}. Vui lòng chọn ảnh nhỏ hơn.`)
+      return
+    }
+
+    const localPreview = window.URL.createObjectURL(file)
+    setUploadPreviewUrl(localPreview)
     setUploading(true)
     setUploadError(null)
     try {
@@ -65,6 +95,8 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
       setValue('imageUrl', response.data.imageUrl, { shouldDirty: true, shouldValidate: true })
     } catch {
       setUploadError('Không thể upload ảnh. Vui lòng thử lại.')
+      window.URL.revokeObjectURL(localPreview)
+      setUploadPreviewUrl(imageUrl ?? null)
     } finally {
       setUploading(false)
     }
@@ -111,9 +143,15 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
               className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm"
             />
           </div>
+          <p className="mt-1 text-xs text-gray-500">Khuyên dùng ảnh vuông, định dạng PNG/JPG/WEBP, tối đa {formatFileSize(MAX_IMAGE_UPLOAD_SIZE_BYTES)}.</p>
           <input {...register('imageUrl')} placeholder="/uploads/products/..." className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
           {uploading && <p className="mt-1 text-xs text-teal-700">Đang upload ảnh...</p>}
           {uploadError && <p className="mt-1 text-xs text-red-500">{uploadError}</p>}
+          {uploadPreviewUrl && (
+            <div className="mt-2 overflow-hidden rounded-xl border border-stone-200 bg-stone-50 p-2">
+              <img src={uploadPreviewUrl} alt="Xem trước ảnh sản phẩm" className="h-32 w-32 rounded-lg object-cover" />
+            </div>
+          )}
           {imageUrl && <p className="mt-1 text-xs text-gray-500">Đã cập nhật ảnh: {imageUrl}</p>}
         </div>
       </div>
@@ -341,6 +379,26 @@ export default function ProductsPage() {
 
   const handleImportProducts = async (file?: File) => {
     if (!file || importing) return
+
+    const fileName = file.name.toLowerCase()
+    const isCsv = file.type === 'text/csv' || fileName.endsWith('.csv')
+    if (!isCsv) {
+      showToast({
+        tone: 'error',
+        title: 'Sai định dạng file import',
+        message: 'Chỉ hỗ trợ file CSV. Vui lòng chọn đúng định dạng.',
+      })
+      return
+    }
+    if (file.size > MAX_IMPORT_UPLOAD_SIZE_BYTES) {
+      showToast({
+        tone: 'error',
+        title: 'File import quá lớn',
+        message: `Dung lượng tối đa ${formatFileSize(MAX_IMPORT_UPLOAD_SIZE_BYTES)}.`,
+      })
+      return
+    }
+
     setImporting(true)
     try {
       const formData = new FormData()
