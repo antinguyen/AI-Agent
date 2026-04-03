@@ -190,7 +190,7 @@ export default function UsersPage() {
             disabled={createMutation.isPending}
             className="rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-60 md:mt-7"
           >
-            {createMutation.isPending ? 'Đang tạo...' : 'Thêm user'}
+            {createMutation.isPending ? 'Đang tạo...' : 'Thêm người dùng'}
           </button>
         </form>
 

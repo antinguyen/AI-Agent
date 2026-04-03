@@ -5,6 +5,18 @@ import type { Order, PageResponse, SalesReturn } from '../lib/types'
 import PageHero from '../components/ui/PageHero'
 import { useToast } from '../components/ui/ToastProvider'
 
+const RETURN_STATUS_LABEL: Record<string, string> = {
+  PENDING: 'Chờ xử lý',
+  COMPLETED: 'Hoàn tất',
+  CANCELLED: 'Đã huỷ',
+}
+
+const RETURN_STATUS_COLOR: Record<string, string> = {
+  PENDING: 'bg-amber-100 text-amber-700',
+  COMPLETED: 'bg-emerald-100 text-emerald-700',
+  CANCELLED: 'bg-rose-100 text-rose-700',
+}
+
 export default function ReturnsPage() {
   const qc = useQueryClient()
   const { showToast } = useToast()
@@ -148,9 +160,14 @@ export default function ReturnsPage() {
           <div key={r.id} className="rounded-2xl bg-white/80 border border-stone-200 px-4 py-3 text-sm">
             <div className="flex items-center justify-between gap-3">
               <span className="font-mono text-xs text-gray-500">{r.returnNumber}</span>
-              <span className="font-semibold text-gray-900">{fmt(r.totalRefund)}</span>
+              <div className="flex items-center gap-2">
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${RETURN_STATUS_COLOR[r.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                  {RETURN_STATUS_LABEL[r.status] ?? r.status}
+                </span>
+                <span className="font-semibold text-gray-900">{fmt(r.totalRefund)}</span>
+              </div>
             </div>
-            <p className="mt-1 text-gray-600">Order: {r.orderNumber} · {r.status}</p>
+            <p className="mt-1 text-gray-600">Đơn: {r.orderNumber}</p>
           </div>
         ))}
       </section>

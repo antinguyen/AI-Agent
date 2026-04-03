@@ -7,6 +7,12 @@ import { useToast } from '../components/ui/ToastProvider'
 
 const METHODS: PaymentMethod[] = ['CASH', 'BANK_TRANSFER', 'CARD']
 
+const METHOD_LABEL: Record<PaymentMethod, string> = {
+  CASH: 'Tiền mặt',
+  BANK_TRANSFER: 'Chuyển khoản',
+  CARD: 'Thẻ ngân hàng',
+}
+
 export default function FinancePage() {
   const qc = useQueryClient()
   const { showToast } = useToast()
@@ -89,7 +95,7 @@ export default function FinancePage() {
                   onChange={(e) => setMethodByOrder((s) => ({ ...s, [order.id]: e.target.value as PaymentMethod }))}
                   className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm"
                 >
-                  {METHODS.map((m) => <option key={m} value={m}>{m}</option>)}
+                  {METHODS.map((m) => <option key={m} value={m}>{METHOD_LABEL[m]}</option>)}
                 </select>
                 <input
                   value={note}
@@ -112,7 +118,7 @@ export default function FinancePage() {
 
       <section className="grid gap-5 lg:grid-cols-2">
         <div className="panel-soft rounded-3xl p-5 space-y-3">
-          <h3 className="text-lg font-semibold text-gray-900">Payments</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Giao dịch thanh toán</h3>
           {paymentsLoading && <p className="text-sm text-gray-500">Đang tải payments...</p>}
           {payments.length === 0 && <p className="text-sm text-gray-500">Chưa có giao dịch thanh toán.</p>}
           {payments.slice(0, 12).map((p) => (
@@ -121,13 +127,13 @@ export default function FinancePage() {
                 <span className="font-mono text-xs text-gray-500">{p.paymentNumber}</span>
                 <span className="font-semibold text-gray-900">{fmt(p.amount)}</span>
               </div>
-              <p className="mt-1 text-gray-600">Order: {p.orderNumber} · {p.method}</p>
+              <p className="mt-1 text-gray-600">Order: {p.orderNumber} · {METHOD_LABEL[p.method as PaymentMethod] ?? p.method}</p>
             </div>
           ))}
         </div>
 
         <div className="panel-soft rounded-3xl p-5 space-y-3">
-          <h3 className="text-lg font-semibold text-gray-900">Invoices</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Hóa đơn</h3>
           {invoicesLoading && <p className="text-sm text-gray-500">Đang tải invoices...</p>}
           {invoices.length === 0 && <p className="text-sm text-gray-500">Chưa có hóa đơn.</p>}
           {invoices.slice(0, 12).map((i) => (
@@ -136,7 +142,7 @@ export default function FinancePage() {
                 <span className="font-mono text-xs text-gray-500">{i.invoiceNumber}</span>
                 <span className="font-semibold text-gray-900">{fmt(i.totalAmount)}</span>
               </div>
-              <p className="mt-1 text-gray-600">Order: {i.orderNumber} · {i.paymentMethod}</p>
+              <p className="mt-1 text-gray-600">Order: {i.orderNumber} · {METHOD_LABEL[i.paymentMethod as PaymentMethod] ?? i.paymentMethod}</p>
             </div>
           ))}
         </div>

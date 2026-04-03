@@ -263,7 +263,7 @@ function CreateOrderForm({ onSubmit, isPending }: { onSubmit: (d: OrderCreateReq
           {...register('warehouseId', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
           className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
         >
-          <option value="">-- Khong chon kho (dung ton kho tong) --</option>
+          <option value="">-- Không chọn kho (dùng tồn kho tổng) --</option>
           {warehouses?.map((w) => (
             <option key={w.id} value={w.id}>{w.name} ({w.code})</option>
           ))}

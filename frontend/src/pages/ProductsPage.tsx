@@ -64,7 +64,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
       })
       setValue('imageUrl', response.data.imageUrl, { shouldDirty: true, shouldValidate: true })
     } catch {
-      setUploadError('Khong the upload anh. Vui long thu lai.')
+      setUploadError('Không thể upload ảnh. Vui lòng thử lại.')
     } finally {
       setUploading(false)
     }
@@ -92,7 +92,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
         <textarea
           {...register('description')}
           rows={3}
-          placeholder="Mo ta ngan gon dac tinh, quy cach, cong dung..."
+          placeholder="Mô tả ngắn gọn đặc tính, quy cách, công dụng..."
           className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
         />
       </div>
@@ -112,9 +112,9 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
             />
           </div>
           <input {...register('imageUrl')} placeholder="/uploads/products/..." className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
-          {uploading && <p className="mt-1 text-xs text-teal-700">Dang upload anh...</p>}
+          {uploading && <p className="mt-1 text-xs text-teal-700">Đang upload ảnh...</p>}
           {uploadError && <p className="mt-1 text-xs text-red-500">{uploadError}</p>}
-          {imageUrl && <p className="mt-1 text-xs text-gray-500">Da cap nhat anh: {imageUrl}</p>}
+          {imageUrl && <p className="mt-1 text-xs text-gray-500">Đã cập nhật ảnh: {imageUrl}</p>}
         </div>
       </div>
       <div className="grid grid-cols-5 gap-3">
@@ -163,7 +163,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
         <div>
           <label className="text-sm font-medium text-gray-700">Nhà cung cấp</label>
           <select {...register('supplier')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <option value="">-- Chon nha cung cap --</option>
+            <option value="">-- Chọn nhà cung cấp --</option>
             {(options?.suppliers ?? []).map((supplier) => (
               <option key={supplier} value={supplier}>{supplier}</option>
             ))}
@@ -172,7 +172,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
         <div>
           <label className="text-sm font-medium text-gray-700">Hãng</label>
           <select {...register('brand')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <option value="">-- Chon hang --</option>
+            <option value="">-- Chọn hãng --</option>
             {(options?.brands ?? []).map((brand) => (
               <option key={brand} value={brand}>{brand}</option>
             ))}
@@ -181,7 +181,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
         <div>
           <label className="text-sm font-medium text-gray-700">Xuất xứ</label>
           <select {...register('originCountry')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <option value="">-- Chon xuat xu --</option>
+            <option value="">-- Chọn xuất xứ --</option>
             {(options?.originCountries ?? []).map((origin) => (
               <option key={origin} value={origin}>{origin}</option>
             ))}

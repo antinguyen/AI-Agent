@@ -6,6 +6,14 @@ import PageHero from '../components/ui/PageHero'
 import { useToast } from '../components/ui/ToastProvider'
 import { useUserPreference } from '../contexts/UserPreferenceContext'
 
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  CREATED: 'Mới tạo',
+  CONFIRMED: 'Xác nhận',
+  PAID: 'Đã thanh toán',
+  CANCELLED: 'Đã huỷ',
+  RETURNED: 'Trả hàng',
+}
+
 function toIsoDate(date: Date): string {
   return date.toISOString().slice(0, 10)
 }
@@ -91,7 +99,7 @@ export default function ReportsPage() {
       />
 
       <section className="panel-soft rounded-3xl p-5 space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Revenue range</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Doanh thu theo thời gian</h3>
         {(revenueError || topError || summaryError) && <p className="text-sm text-rose-600">{pageErrorMessage}</p>}
         <div className="grid gap-3 md:grid-cols-3 md:items-end">
           <div>
@@ -176,7 +184,7 @@ export default function ReportsPage() {
           </div>
           {statuses.map(([status, count]) => (
             <div key={status} className="rounded-2xl bg-white/80 border border-stone-200 px-4 py-3 text-sm flex items-center justify-between">
-              <span className="text-gray-700">{status}</span>
+              <span className="text-gray-700">{ORDER_STATUS_LABEL[status] ?? status}</span>
               <span className="font-semibold text-gray-900">{count}</span>
             </div>
           ))}
