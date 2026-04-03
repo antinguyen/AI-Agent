@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sales-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sales_management}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: sales-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-prod}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-sales_management}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${JPA_DDL_AUTO:-validate}
+      SPRING_JPA_OPEN_IN_VIEW: ${SPRING_JPA_OPEN_IN_VIEW:-false}
+      APP_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      APP_JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      SPRINGDOC_API_DOCS_ENABLED: ${SPRINGDOC_API_DOCS_ENABLED:-false}
+      SPRINGDOC_SWAGGER_UI_ENABLED: ${SPRINGDOC_SWAGGER_UI_ENABLED:-false}
+      MAIL_HOST: ${MAIL_HOST:-mailhog}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-noreply@salesapp.com}
+      APP_MAIL_ENABLED: ${APP_MAIL_ENABLED:-true}
+      APP_DEFAULT_ADMIN_ENABLED: ${APP_DEFAULT_ADMIN_ENABLED:-false}
+      APP_DEFAULT_ADMIN_USERNAME: ${APP_DEFAULT_ADMIN_USERNAME:-admin1}
+      APP_DEFAULT_ADMIN_PASSWORD: ${APP_DEFAULT_ADMIN_PASSWORD:-}
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
+      MAIL_SMTP_STARTTLS_ENABLE: ${MAIL_SMTP_STARTTLS_ENABLE:-false}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "ps -ef | grep '[j]ava -jar app.jar' >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: sales-frontend
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "ps -ef | grep '[n]ginx: master process' >/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: sales-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

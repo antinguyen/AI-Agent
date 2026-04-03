@@ -1,0 +1,24 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+  mail:
+    host: localhost
+    port: 1025
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+app:
+  mail:
+    enabled: false
+  jwt:
+    secret: c2VjcmV0LWp3dC1rZXktZm9yLXNhbGVzLW1hbmFnZW1lbnQtc3lzdGVtLTIwMjYtbXVzdC1iZS1sb25n
+    expiration-ms: 86400000

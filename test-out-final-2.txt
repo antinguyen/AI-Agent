@@ -1,0 +1,369 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.sales:sales-management:jar:0.0.1-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.jacoco:jacoco-maven-plugin is missing. @ line 129, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] ---------------------< com.sales:sales-management >---------------------
+[INFO] Building sales-management 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco:0.8.14:prepare-agent (prepare-agent) @ sales-management ---
+[INFO] argLine set to "-javaagent:C:\\Users\\DonNguyen\\.m2\\repository\\org\\jacoco\\org.jacoco.agent\\0.8.14\\org.jacoco.agent-0.8.14-runtime.jar=destfile=D:\\AI Agent\\target\\jacoco.exec"
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ sales-management ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 11 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ sales-management ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ sales-management ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ sales-management ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 18 source files with javac [debug parameters release 25] to target\test-classes
+[WARNING] /D:/AI Agent/src/test/java/com/sales/management/notification/EmailNotificationIntegrationTest.java:[48,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/AI Agent/src/test/java/com/sales/management/product/ProductCachingIntegrationTest.java:[40,6] org.springframework.boot.test.mock.mockito.SpyBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[INFO] /D:/AI Agent/src/test/java/com/sales/management/customer/CustomerServiceUnitTest.java: Some input files use unchecked or unsafe operations.
+[INFO] /D:/AI Agent/src/test/java/com/sales/management/customer/CustomerServiceUnitTest.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- surefire:3.5.5:test (default-test) @ sales-management ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.sales.management.auth.AuthIntegrationTest
+00:05:34.448 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.sales.management.auth.AuthIntegrationTest]: AuthIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+00:05:35.117 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.auth.AuthIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.13)
+
+2026-04-01T00:05:37.031+07:00  INFO 28800 --- [           main] c.s.management.auth.AuthIntegrationTest  : Starting AuthIntegrationTest using Java 25.0.2 with PID 28800 (started by DonNguyen in D:\AI Agent)
+2026-04-01T00:05:37.034+07:00  INFO 28800 --- [           main] c.s.management.auth.AuthIntegrationTest  : No active profile set, falling back to 1 default profile: "default"
+2026-04-01T00:05:41.717+07:00  INFO 28800 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-01T00:05:42.057+07:00  INFO 28800 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 263 ms. Found 10 JPA repository interfaces.
+2026-04-01T00:05:44.564+07:00  INFO 28800 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-01T00:05:44.752+07:00  INFO 28800 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.45.Final
+2026-04-01T00:05:44.998+07:00  INFO 28800 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-04-01T00:05:46.121+07:00  INFO 28800 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-01T00:05:46.212+07:00  INFO 28800 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-01T00:05:47.167+07:00  INFO 28800 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:0e9e2981-70eb-47a7-a4de-ee78aaa580f8 user=SA
+2026-04-01T00:05:47.171+07:00  INFO 28800 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-04-01T00:05:47.447+07:00  INFO 28800 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-01T00:05:50.764+07:00  INFO 28800 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-01T00:05:50.962+07:00  INFO 28800 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-01T00:05:52.172+07:00  INFO 28800 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-04-01T00:05:54.118+07:00  WARN 28800 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-01T00:05:55.074+07:00  INFO 28800 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name authService
+2026-04-01T00:05:56.679+07:00  INFO 28800 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-04-01T00:05:56.680+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-04-01T00:05:56.688+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 7 ms
+2026-04-01T00:05:56.780+07:00  INFO 28800 --- [           main] c.s.management.auth.AuthIntegrationTest  : Started AuthIntegrationTest in 20.956 seconds (process running for 26.552)
+2026-04-01T00:05:56.790+07:00  WARN 28800 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-04-01T00:05:56.791+07:00  WARN 28800 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (C:\Users\DonNguyen\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 28.09 s -- in com.sales.management.auth.AuthIntegrationTest
+[INFO] Running com.sales.management.auth.UserManagementIntegrationTest
+2026-04-01T00:06:01.642+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.auth.UserManagementIntegrationTest]: UserManagementIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:01.651+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.auth.UserManagementIntegrationTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.967 s -- in com.sales.management.auth.UserManagementIntegrationTest
+[INFO] Running com.sales.management.common.api.GlobalExceptionHandlerTest
+2026-04-01T00:06:02.663+07:00  INFO 28800 --- [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-04-01T00:06:02.665+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-04-01T00:06:02.667+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-04-01T00:06:02.716+07:00  INFO 28800 --- [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-04-01T00:06:02.716+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-04-01T00:06:02.716+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-04-01T00:06:02.739+07:00  INFO 28800 --- [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-04-01T00:06:02.740+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-04-01T00:06:02.740+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-04-01T00:06:02.797+07:00  INFO 28800 --- [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-04-01T00:06:02.797+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-04-01T00:06:02.797+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-04-01T00:06:02.814+07:00  INFO 28800 --- [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-04-01T00:06:02.814+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-04-01T00:06:02.814+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.218 s -- in com.sales.management.common.api.GlobalExceptionHandlerTest
+[INFO] Running com.sales.management.common.exception.ExceptionClassesTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.224 s -- in com.sales.management.common.exception.ExceptionClassesTest
+[INFO] Running com.sales.management.customer.CustomerControllerIntegrationTest
+2026-04-01T00:06:03.079+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.customer.CustomerControllerIntegrationTest]: CustomerControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:03.113+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.customer.CustomerControllerIntegrationTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.766 s -- in com.sales.management.customer.CustomerControllerIntegrationTest
+[INFO] Running com.sales.management.customer.CustomerServiceUnitTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.672 s -- in com.sales.management.customer.CustomerServiceUnitTest
+[INFO] Running com.sales.management.discount.DiscountIntegrationTest
+2026-04-01T00:06:04.524+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.discount.DiscountIntegrationTest]: DiscountIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:04.562+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.discount.DiscountIntegrationTest
+2026-04-01T00:06:05.234+07:00  WARN 28800 --- [         task-1] c.s.m.notification.EmailService          : Failed to send email to disc@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:05.297+07:00  WARN 28800 --- [         task-2] c.s.m.notification.EmailService          : Failed to send email to disc@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:05.828+07:00  WARN 28800 --- [         task-3] c.s.m.notification.EmailService          : Failed to send email to disc@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.415 s -- in com.sales.management.discount.DiscountIntegrationTest
+[INFO] Running com.sales.management.export.ExportIntegrationTest
+2026-04-01T00:06:05.939+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.export.ExportIntegrationTest]: ExportIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:05.998+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.export.ExportIntegrationTest
+2026-04-01T00:06:06.089+07:00  WARN 28800 --- [         task-4] c.s.m.notification.EmailService          : Failed to send email to export@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:06.724+07:00  WARN 28800 --- [         task-5] c.s.m.notification.EmailService          : Failed to send email to export@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.462 s -- in com.sales.management.export.ExportIntegrationTest
+[INFO] Running com.sales.management.notification.EmailNotificationIntegrationTest
+2026-04-01T00:06:08.482+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.notification.EmailNotificationIntegrationTest]: EmailNotificationIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:08.525+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.notification.EmailNotificationIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.13)
+
+2026-04-01T00:06:08.605+07:00  INFO 28800 --- [           main] c.s.m.n.EmailNotificationIntegrationTest : Starting EmailNotificationIntegrationTest using Java 25.0.2 with PID 28800 (started by DonNguyen in D:\AI Agent)
+2026-04-01T00:06:08.606+07:00  INFO 28800 --- [           main] c.s.m.n.EmailNotificationIntegrationTest : No active profile set, falling back to 1 default profile: "default"
+2026-04-01T00:06:09.351+07:00  INFO 28800 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-01T00:06:09.421+07:00  INFO 28800 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 67 ms. Found 10 JPA repository interfaces.
+2026-04-01T00:06:09.858+07:00  INFO 28800 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-01T00:06:09.875+07:00  INFO 28800 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-04-01T00:06:09.937+07:00  INFO 28800 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-01T00:06:09.938+07:00  INFO 28800 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-04-01T00:06:09.943+07:00  INFO 28800 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:479b0206-a106-4d0e-9d22-4e541008a537 user=SA
+2026-04-01T00:06:09.944+07:00  INFO 28800 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-04-01T00:06:09.949+07:00  INFO 28800 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-2)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-01T00:06:10.160+07:00  INFO 28800 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-01T00:06:10.207+07:00  INFO 28800 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-01T00:06:10.639+07:00  WARN 28800 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-01T00:06:10.815+07:00  INFO 28800 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name authService
+2026-04-01T00:06:11.063+07:00  INFO 28800 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-04-01T00:06:11.068+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-04-01T00:06:11.069+07:00  INFO 28800 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-04-01T00:06:11.088+07:00  INFO 28800 --- [           main] c.s.m.n.EmailNotificationIntegrationTest : Started EmailNotificationIntegrationTest in 2.553 seconds (process running for 40.86)
+2026-04-01T00:06:11.090+07:00  WARN 28800 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-04-01T00:06:11.090+07:00  WARN 28800 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-04-01T00:06:11.238+07:00  INFO 28800 --- [         task-1] c.s.m.notification.EmailService          : Email sent to customer@example.com ù subject: Order Confirmation ù SO-20260401-83302
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.265 s -- in com.sales.management.notification.EmailNotificationIntegrationTest
+[INFO] Running com.sales.management.order.SalesOrderIntegrationTest
+2026-04-01T00:06:11.730+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.order.SalesOrderIntegrationTest]: SalesOrderIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:11.746+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.order.SalesOrderIntegrationTest
+2026-04-01T00:06:11.805+07:00  WARN 28800 --- [         task-6] c.s.m.notification.EmailService          : Failed to send email to admin@salesapp.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:11.845+07:00  WARN 28800 --- [         task-7] c.s.m.notification.EmailService          : Failed to send email to cus-a@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:11.908+07:00  WARN 28800 --- [         task-1] c.s.m.notification.EmailService          : Failed to send email to cus-a@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:11.909+07:00  WARN 28800 --- [         task-8] c.s.m.notification.EmailService          : Failed to send email to admin@salesapp.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:11.995+07:00  WARN 28800 --- [         task-2] c.s.m.notification.EmailService          : Failed to send email to admin@salesapp.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.008+07:00  WARN 28800 --- [         task-3] c.s.m.notification.EmailService          : Failed to send email to cus-a@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.078+07:00  WARN 28800 --- [         task-4] c.s.m.notification.EmailService          : Failed to send email to admin@salesapp.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.090+07:00  WARN 28800 --- [         task-5] c.s.m.notification.EmailService          : Failed to send email to cus-a@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.096+07:00  WARN 28800 --- [         task-6] c.s.m.notification.EmailService          : Failed to send email to cus-a@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.386 s -- in com.sales.management.order.SalesOrderIntegrationTest
+[INFO] Running com.sales.management.payment.PaymentInvoiceIntegrationTest
+2026-04-01T00:06:12.128+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.payment.PaymentInvoiceIntegrationTest]: PaymentInvoiceIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:12.154+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.payment.PaymentInvoiceIntegrationTest
+2026-04-01T00:06:12.241+07:00  WARN 28800 --- [         task-7] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.260+07:00  WARN 28800 --- [         task-1] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.391+07:00  WARN 28800 --- [         task-8] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.416+07:00  WARN 28800 --- [         task-2] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.536+07:00  WARN 28800 --- [         task-3] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.544+07:00  WARN 28800 --- [         task-4] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.609+07:00  WARN 28800 --- [         task-5] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.676+07:00  WARN 28800 --- [         task-6] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.691+07:00  WARN 28800 --- [         task-7] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.772+07:00  WARN 28800 --- [         task-1] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.778+07:00  WARN 28800 --- [         task-8] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.871+07:00  WARN 28800 --- [         task-2] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.880+07:00  WARN 28800 --- [         task-3] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.896+07:00  WARN 28800 --- [         task-4] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:12.907+07:00  WARN 28800 --- [         task-5] c.s.m.notification.EmailService          : Failed to send email to pay@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.847 s -- in com.sales.management.payment.PaymentInvoiceIntegrationTest
+[INFO] Running com.sales.management.product.LowStockIntegrationTest
+2026-04-01T00:06:12.970+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.product.LowStockIntegrationTest]: LowStockIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:12.985+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.product.LowStockIntegrationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.304 s -- in com.sales.management.product.LowStockIntegrationTest
+[INFO] Running com.sales.management.product.ProductCachingIntegrationTest
+2026-04-01T00:06:13.290+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.product.ProductCachingIntegrationTest]: ProductCachingIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:13.304+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.product.ProductCachingIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.13)
+
+2026-04-01T00:06:13.337+07:00  INFO 28800 --- [           main] c.s.m.p.ProductCachingIntegrationTest    : Starting ProductCachingIntegrationTest using Java 25.0.2 with PID 28800 (started by DonNguyen in D:\AI Agent)
+2026-04-01T00:06:13.337+07:00  INFO 28800 --- [           main] c.s.m.p.ProductCachingIntegrationTest    : No active profile set, falling back to 1 default profile: "default"
+2026-04-01T00:06:13.697+07:00  INFO 28800 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-04-01T00:06:13.760+07:00  INFO 28800 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 62 ms. Found 10 JPA repository interfaces.
+2026-04-01T00:06:14.013+07:00  INFO 28800 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-04-01T00:06:14.023+07:00  INFO 28800 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-04-01T00:06:14.057+07:00  INFO 28800 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-04-01T00:06:14.059+07:00  INFO 28800 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-04-01T00:06:14.066+07:00  INFO 28800 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection conn20: url=jdbc:h2:mem:b98c23ba-1c45-4302-b7b8-f3b17489c0ee user=SA
+2026-04-01T00:06:14.071+07:00  INFO 28800 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-04-01T00:06:14.072+07:00  INFO 28800 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-3)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-04-01T00:06:14.261+07:00  INFO 28800 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-04-01T00:06:14.293+07:00  INFO 28800 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-04-01T00:06:14.863+07:00  WARN 28800 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-04-01T00:06:14.981+07:00  INFO 28800 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name authService
+2026-04-01T00:06:15.210+07:00  INFO 28800 --- [           main] c.s.m.p.ProductCachingIntegrationTest    : Started ProductCachingIntegrationTest in 1.902 seconds (process running for 44.981)
+2026-04-01T00:06:15.211+07:00  WARN 28800 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-04-01T00:06:15.211+07:00  WARN 28800 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.074 s -- in com.sales.management.product.ProductCachingIntegrationTest
+[INFO] Running com.sales.management.product.ProductControllerIntegrationTest
+2026-04-01T00:06:15.389+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.product.ProductControllerIntegrationTest]: ProductControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:15.393+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.product.ProductControllerIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.110 s -- in com.sales.management.product.ProductControllerIntegrationTest
+[INFO] Running com.sales.management.product.ProductServiceUnitTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.136 s -- in com.sales.management.product.ProductServiceUnitTest
+[INFO] Running com.sales.management.product.ProductValidationIntegrationTest
+2026-04-01T00:06:15.645+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.product.ProductValidationIntegrationTest]: ProductValidationIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:15.647+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.product.ProductValidationIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in com.sales.management.product.ProductValidationIntegrationTest
+[INFO] Running com.sales.management.report.ReportingIntegrationTest
+2026-04-01T00:06:15.681+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.report.ReportingIntegrationTest]: ReportingIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:15.705+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.report.ReportingIntegrationTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.837 s -- in com.sales.management.report.ReportingIntegrationTest
+[INFO] Running com.sales.management.salesreturn.SalesReturnIntegrationTest
+2026-04-01T00:06:16.525+07:00  INFO 28800 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.sales.management.salesreturn.SalesReturnIntegrationTest]: SalesReturnIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-04-01T00:06:16.544+07:00  INFO 28800 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.sales.management.SalesManagementApplication for test class com.sales.management.salesreturn.SalesReturnIntegrationTest
+2026-04-01T00:06:16.609+07:00  WARN 28800 --- [         task-6] c.s.m.notification.EmailService          : Failed to send email to ret@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:16.620+07:00  WARN 28800 --- [         task-7] c.s.m.notification.EmailService          : Failed to send email to ret@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:16.742+07:00  WARN 28800 --- [         task-1] c.s.m.notification.EmailService          : Failed to send email to ret@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:16.758+07:00  WARN 28800 --- [         task-8] c.s.m.notification.EmailService          : Failed to send email to ret@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:17.081+07:00  WARN 28800 --- [         task-2] c.s.m.notification.EmailService          : Failed to send email to ret@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:17.088+07:00  WARN 28800 --- [         task-3] c.s.m.notification.EmailService          : Failed to send email to ret@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:17.187+07:00  WARN 28800 --- [         task-4] c.s.m.notification.EmailService          : Failed to send email to ret@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:17.195+07:00  WARN 28800 --- [         task-5] c.s.m.notification.EmailService          : Failed to send email to ret@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:17.292+07:00  WARN 28800 --- [         task-6] c.s.m.notification.EmailService          : Failed to send email to ret@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+2026-04-01T00:06:17.299+07:00  WARN 28800 --- [         task-7] c.s.m.notification.EmailService          : Failed to send email to ret@example.com ù Mail server connection failed. Failed messages: org.eclipse.angus.mail.util.MailConnectException: Couldn't connect to host, port: localhost, 1025; timeout -1;
+  nested exception is:
+	java.net.ConnectException: Connection refused: connect
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.840 s -- in com.sales.management.salesreturn.SalesReturnIntegrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 113, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  59.276 s
+[INFO] Finished at: 2026-04-01T00:06:18+07:00
+[INFO] ------------------------------------------------------------------------
