@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, Search } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Boxes, AlertTriangle, FileSpreadsheet } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import api from '../lib/api'
 import type { Product, ProductCreateRequest, ProductImportResponse, PageResponse, ProductOptions } from '../lib/types'
@@ -542,11 +542,44 @@ export default function ProductsPage() {
   const formatVnd = (v: number, rate: number) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v * rate)
 
+  const lowStockCount = (data?.content ?? []).filter((product) => product.stockQuantity <= product.lowStockThreshold).length
+
   return (
     <div className="space-y-5">
-      <PageHero eyebrow="Catalog" title="Sản phẩm" description="Quản lý danh mục, tồn kho và ngưỡng cảnh báo trên cùng một bảng." />
+      <PageHero
+        eyebrow="Catalog"
+        title="Sản phẩm"
+        description="CRM workspace cho danh mục sản phẩm, nhập liệu, tồn kho và cảnh báo dưới ngưỡng."
+        aside={(
+          <div className="grid grid-cols-2 gap-3 text-sm md:w-[340px]">
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Hiển thị trang</p>
+              <p className="mt-1 font-semibold text-gray-900">{data?.content.length ?? '—'}</p>
+            </div>
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Tổng kết quả</p>
+              <p className="mt-1 font-semibold text-gray-900">{data?.totalElements ?? '—'}</p>
+            </div>
+          </div>
+        )}
+      />
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><Boxes size={14} /> Tổng sản phẩm</p>
+          <p className="mt-2 text-2xl font-bold text-teal-700">{data?.totalElements ?? '—'}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><AlertTriangle size={14} /> Dưới ngưỡng kho</p>
+          <p className="mt-2 text-2xl font-bold text-amber-700">{lowStockCount}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><FileSpreadsheet size={14} /> Trạng thái import</p>
+          <p className="mt-2 text-sm font-semibold text-gray-900">{importing ? 'Đang import...' : importValidationMessage || 'Sẵn sàng import CSV'}</p>
+        </div>
+      </section>
+
+      <div className="sticky top-4 z-10 flex flex-col gap-3 rounded-3xl border border-white/70 bg-white/85 p-3 backdrop-blur md:flex-row md:items-center md:justify-between">
         {isAdmin ? (
           <div className="flex items-center gap-2">
             <button

@@ -1,5 +1,6 @@
  import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Activity, BarChart3, FileSpreadsheet } from 'lucide-react'
 import api from '../lib/api'
 import type { OrderSummaryReport, RevenueReport, TopProductReport } from '../lib/types'
 import PageHero from '../components/ui/PageHero'
@@ -73,6 +74,7 @@ export default function ReportsPage() {
   const isInvalidDateRange = from > to
 
   const statuses = useMemo(() => Object.entries(summary?.countByStatus ?? {}), [summary])
+  const topRevenueTotal = topProducts.reduce((sum, item) => sum + item.totalRevenue, 0)
 
   const exportExcel = async () => {
     if (isInvalidDateRange) {
@@ -131,9 +133,38 @@ export default function ReportsPage() {
         eyebrow="Analytics"
         title="Reports & Export"
         description="Theo dõi KPI doanh thu, top sản phẩm và xuất dữ liệu Excel phục vụ vận hành."
+        aside={(
+          <div className="grid grid-cols-2 gap-3 text-sm md:w-[340px]">
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Khoảng báo cáo</p>
+              <p className="mt-1 font-semibold text-gray-900">{from} → {to}</p>
+            </div>
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Đơn trong kỳ</p>
+              <p className="mt-1 font-semibold text-gray-900">{revenue?.totalOrders ?? '—'}</p>
+            </div>
+          </div>
+        )}
       />
 
-      <section className="panel-soft rounded-3xl p-5 space-y-4">
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><Activity size={14} /> Doanh thu kỳ</p>
+          <p className="mt-2 text-2xl font-bold text-teal-700">{revenue ? formatCurrency(revenue.totalRevenue, 'VND') : '—'}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><BarChart3 size={14} /> Top sản phẩm</p>
+          <p className="mt-2 text-2xl font-bold text-sky-700">{topProducts.length}</p>
+          <p className="mt-1 text-xs text-gray-500">Doanh thu top: {formatCurrency(topRevenueTotal, 'VND')}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><FileSpreadsheet size={14} /> Trạng thái đơn</p>
+          <p className="mt-2 text-2xl font-bold text-indigo-700">{statuses.length}</p>
+          <p className="mt-1 text-xs text-gray-500">Nhóm trạng thái đang theo dõi</p>
+        </div>
+      </section>
+
+      <section className="panel-soft sticky top-4 z-10 rounded-3xl p-5 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Doanh thu theo thời gian</h3>
         {(revenueError || topError || summaryError) && <p className="text-sm text-rose-600">{pageErrorMessage}</p>}
         <div className="grid gap-3 md:grid-cols-3 md:items-end">

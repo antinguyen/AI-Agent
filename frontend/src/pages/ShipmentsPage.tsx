@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Truck, PackageCheck, Ban } from 'lucide-react'
+import { Truck, PackageCheck, Ban, TimerReset, Boxes } from 'lucide-react'
 import api from '../lib/api'
 import type { Order, PageResponse, Shipment } from '../lib/types'
 import PageHero from '../components/ui/PageHero'
@@ -99,6 +99,9 @@ export default function ShipmentsPage() {
 
   const pageError = (ordersError || shipmentsError) as { response?: { data?: { message?: string } } } | undefined
   const pageErrorMessage = pageError?.response?.data?.message ?? 'Không thể tải dữ liệu fulfillment.'
+  const createdCount = shipments.filter((item) => item.status === 'CREATED').length
+  const shippedCount = shipments.filter((item) => item.status === 'SHIPPED').length
+  const cancelledCount = shipments.filter((item) => item.status === 'CANCELLED').length
 
   return (
     <div className="space-y-5">
@@ -107,9 +110,36 @@ export default function ShipmentsPage() {
         title="Giao hàng"
         description="Tạo phiếu giao từ đơn đã xác nhận và kiểm soát thao tác xuất kho khi giao hàng."
         icon={<Truck size={22} />}
+        aside={(
+          <div className="grid grid-cols-2 gap-3 text-sm md:w-[340px]">
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Đơn có thể tạo phiếu</p>
+              <p className="mt-1 font-semibold text-gray-900">{fulfillableOrders.length}</p>
+            </div>
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Phiếu theo bộ lọc</p>
+              <p className="mt-1 font-semibold text-gray-900">{filteredShipments.length}</p>
+            </div>
+          </div>
+        )}
       />
 
-      <section className="panel-soft rounded-3xl p-5 space-y-4">
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><TimerReset size={14} /> Chờ giao</p>
+          <p className="mt-2 text-2xl font-bold text-amber-700">{createdCount}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><PackageCheck size={14} /> Đã giao</p>
+          <p className="mt-2 text-2xl font-bold text-emerald-700">{shippedCount}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><Boxes size={14} /> Đã huỷ</p>
+          <p className="mt-2 text-2xl font-bold text-rose-700">{cancelledCount}</p>
+        </div>
+      </section>
+
+      <section className="panel-soft sticky top-4 z-10 rounded-3xl p-5 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Tạo phiếu giao hàng</h3>
         {(ordersLoading || shipmentsLoading) && <p className="text-sm text-gray-500">Đang tải dữ liệu fulfillment...</p>}
         {(ordersError || shipmentsError) && <p className="text-sm text-rose-600">{pageErrorMessage}</p>}
