@@ -70,9 +70,11 @@ DRY_RUN = '--dry-run' in sys.argv
 VERBOSE = '--verbose' in sys.argv
 NO_BUILD = '--no-build' in sys.argv
 SOFT_HEALTH = '--soft-health' in sys.argv
+STRICT_HEALTH = '--strict-health' in sys.argv
 PRINT_JSON = '--print-json' in sys.argv
 PRINT_JSON_ONLY = '--print-json-only' in sys.argv
 HELP = '--help' in sys.argv or '-h' in sys.argv
+HEALTH_MODE = 'soft' if SOFT_HEALTH else 'strict'
 
 
 def utc_now_iso():
@@ -145,6 +147,7 @@ def print_usage():
     print('  --force               Deploy using DEFAULT_DEPLOY_FILES list')
     print('  --base-ref <ref>      Deploy files changed from <ref>...HEAD')
     print('  --no-build            Skip docker compose build step')
+    print('  --strict-health       Fail deploy when backend/frontend health checks fail (default)')
     print('  --soft-health         Do not fail deploy on backend/frontend health check errors')
     print('  --print-json          Print machine-readable JSON summary')
     print('  --print-json-only     Print JSON only (no text logs, implies --dry-run)')
@@ -171,7 +174,7 @@ BASE_REF = parse_option_value('--base-ref')
 
 def validate_args():
     known_switches = {
-        '--help', '-h', '--force', '--dry-run', '--verbose', '--no-build', '--soft-health', '--print-json', '--print-json-only', '--base-ref',
+        '--help', '-h', '--force', '--dry-run', '--verbose', '--no-build', '--strict-health', '--soft-health', '--print-json', '--print-json-only', '--base-ref',
     }
     skip_next = False
     for index, arg in enumerate(sys.argv[1:], start=1):
@@ -195,6 +198,8 @@ validate_args()
 
 if FORCE_DEPLOY and BASE_REF:
     exit_with_payload(EXIT_INVALID_ARGS, status='error', message='Invalid options: --force cannot be used together with --base-ref', error_code='invalid_option_combo')
+if STRICT_HEALTH and SOFT_HEALTH:
+    exit_with_payload(EXIT_INVALID_ARGS, status='error', message='Invalid options: --strict-health cannot be used together with --soft-health', error_code='invalid_option_combo')
 if PRINT_JSON_ONLY and not DRY_RUN:
     exit_with_payload(EXIT_INVALID_ARGS, status='error', message='Invalid options: --print-json-only requires --dry-run', error_code='invalid_option_combo')
 if PRINT_JSON_ONLY:
@@ -304,7 +309,7 @@ def build_mode_summary(selection_mode, force_deploy, base_ref, dry_run, no_build
     parts.append(f'force={"on" if force_deploy else "off"}')
     parts.append(f'dryRun={"on" if dry_run else "off"}')
     parts.append(f'noBuild={"on" if no_build else "off"}')
-    parts.append(f'softHealth={"on" if SOFT_HEALTH else "off"}')
+    parts.append(f'healthMode={HEALTH_MODE}')
     parts.append(f'jsonOnly={"on" if print_json_only else "off"}')
     return ', '.join(parts)
 
@@ -329,7 +334,9 @@ payload_context = {
         'force': FORCE_DEPLOY,
         'dryRun': DRY_RUN,
         'noBuild': NO_BUILD,
+        'strictHealth': not SOFT_HEALTH,
         'softHealth': SOFT_HEALTH,
+        'healthMode': HEALTH_MODE,
         'printJson': PRINT_JSON,
         'printJsonOnly': PRINT_JSON_ONLY,
         'verbose': VERBOSE,
