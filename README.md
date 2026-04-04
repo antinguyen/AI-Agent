@@ -3,6 +3,7 @@
 [![CI](https://github.com/antinguyen/AI-Agent/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/antinguyen/AI-Agent/actions/workflows/ci.yml)
 [![Deploy CLI Regression](https://github.com/antinguyen/AI-Agent/actions/workflows/deploy-cli-regression.yml/badge.svg?branch=master)](https://github.com/antinguyen/AI-Agent/actions/workflows/deploy-cli-regression.yml)
 [![Live Smoke](https://github.com/antinguyen/AI-Agent/actions/workflows/live-smoke.yml/badge.svg?branch=master)](https://github.com/antinguyen/AI-Agent/actions/workflows/live-smoke.yml)
+[![Release Docs Draft](https://github.com/antinguyen/AI-Agent/actions/workflows/release-docs-draft.yml/badge.svg?branch=master)](https://github.com/antinguyen/AI-Agent/actions/workflows/release-docs-draft.yml)
 
 Backend cho hệ thống quản lý bán hàng xây dựng bằng Spring Boot.
 
