@@ -66,6 +66,30 @@ PRINT_JSON_ONLY = '--print-json-only' in sys.argv
 HELP = '--help' in sys.argv or '-h' in sys.argv
 
 
+def utc_now_iso():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def exit_with_payload(exit_code, status='success', message=None, error_code=None, data=None):
+    if PRINT_JSON or PRINT_JSON_ONLY:
+        payload = {
+            'timestampUtc': utc_now_iso(),
+            'exitCode': exit_code,
+            'status': status,
+        }
+        if data:
+            payload.update(data)
+        if message:
+            payload['message'] = message
+        if error_code or status == 'error':
+            payload['error'] = {
+                'code': error_code or 'unknown_error',
+                'message': message or 'Unknown error',
+            }
+        print(json.dumps(payload, ensure_ascii=False))
+    sys.exit(exit_code)
+
+
 def print_usage():
     print('Usage: python scripts/deploy_prod.py [options]')
     print('Options:')
@@ -90,8 +114,7 @@ def parse_option_value(option_name):
         return None
     index = sys.argv.index(option_name)
     if index + 1 >= len(sys.argv):
-        print(f'Missing value for {option_name}')
-        sys.exit(EXIT_INVALID_ARGS)
+        exit_with_payload(EXIT_INVALID_ARGS, status='error', message=f'Missing value for {option_name}', error_code='missing_option_value')
     return sys.argv[index + 1].strip()
 
 
@@ -109,27 +132,23 @@ def validate_args():
             continue
         if arg == '--base-ref':
             if index + 1 >= len(sys.argv):
-                print('Missing value for --base-ref')
-                sys.exit(EXIT_INVALID_ARGS)
+                exit_with_payload(EXIT_INVALID_ARGS, status='error', message='Missing value for --base-ref', error_code='missing_option_value')
             skip_next = True
             continue
         if arg.startswith('-') and arg not in known_switches:
-            print(f'Unknown option: {arg}')
-            sys.exit(EXIT_INVALID_ARGS)
+            exit_with_payload(EXIT_INVALID_ARGS, status='error', message=f'Unknown option: {arg}', error_code='unknown_option')
 
 
 if HELP:
     print_usage()
-    sys.exit(EXIT_SUCCESS)
+    exit_with_payload(EXIT_SUCCESS, status='success', message='Help displayed')
 
 validate_args()
 
 if FORCE_DEPLOY and BASE_REF:
-    print('Invalid options: --force cannot be used together with --base-ref')
-    sys.exit(EXIT_INVALID_ARGS)
+    exit_with_payload(EXIT_INVALID_ARGS, status='error', message='Invalid options: --force cannot be used together with --base-ref', error_code='invalid_option_combo')
 if PRINT_JSON_ONLY and not DRY_RUN:
-    print('Invalid options: --print-json-only requires --dry-run')
-    sys.exit(EXIT_INVALID_ARGS)
+    exit_with_payload(EXIT_INVALID_ARGS, status='error', message='Invalid options: --print-json-only requires --dry-run', error_code='invalid_option_combo')
 if PRINT_JSON_ONLY:
     PRINT_JSON = True
 
@@ -176,8 +195,7 @@ def resolve_changed_files(force_mode=False, base_ref=None):
 
     if base_ref:
         if not git_ref_exists(base_ref):
-            print(f'Invalid --base-ref: {base_ref}')
-            sys.exit(EXIT_INVALID_ARGS)
+            exit_with_payload(EXIT_INVALID_ARGS, status='error', message=f'Invalid --base-ref: {base_ref}', error_code='invalid_base_ref')
         arg_sets = (
             ['diff', '--name-only', f'{base_ref}...HEAD'],
             ['diff', '--name-only', '--cached'],
@@ -242,10 +260,7 @@ def run(client, cmd, timeout=60):
     return rc
 
 CHANGED_FILES, selection_mode, all_candidates, skipped_files = resolve_changed_files(FORCE_DEPLOY, BASE_REF)
-if PRINT_JSON:
-    payload = {
-        'timestampUtc': datetime.now(timezone.utc).isoformat(),
-        'exitCode': EXIT_SUCCESS,
+payload_context = {
         'selectionMode': selection_mode,
         'baseRef': BASE_REF,
         'forceDeploy': FORCE_DEPLOY,
@@ -256,15 +271,16 @@ if PRINT_JSON:
         'selectedFiles': CHANGED_FILES,
         'candidateCount': len(all_candidates),
         'isNoOp': len(CHANGED_FILES) == 0,
-    }
-    if VERBOSE:
-        payload['skippedFiles'] = [
-            {'path': path, 'reason': reason}
-            for path, reason in skipped_files
-        ]
-    print(json.dumps(payload, ensure_ascii=False))
+}
+if VERBOSE:
+    payload_context['skippedFiles'] = [
+        {'path': path, 'reason': reason}
+        for path, reason in skipped_files
+    ]
 if PRINT_JSON_ONLY:
-    sys.exit(EXIT_SUCCESS)
+    exit_with_payload(EXIT_SUCCESS, status='success', data=payload_context)
+if PRINT_JSON:
+    print(json.dumps({'timestampUtc': utc_now_iso(), 'exitCode': EXIT_SUCCESS, 'status': 'success', **payload_context}, ensure_ascii=False))
 print(f'Selection mode: {selection_mode}')
 print(f'Prepared {len(CHANGED_FILES)} file(s) for upload')
 if CHANGED_FILES:
@@ -277,18 +293,17 @@ if VERBOSE and skipped_files:
         print(f'  - {rel_path} ({reason})')
 if not CHANGED_FILES:
     print('No deployable files detected from git changes; nothing to deploy')
-    sys.exit(EXIT_SUCCESS)
+    exit_with_payload(EXIT_SUCCESS, status='success', message='No deployable files detected from git changes; nothing to deploy', data=payload_context)
 if DRY_RUN:
     print('Dry-run mode enabled; stopping before SSH/deploy steps')
-    sys.exit(EXIT_SUCCESS)
+    exit_with_payload(EXIT_SUCCESS, status='success', message='Dry-run mode enabled; stopping before SSH/deploy steps', data=payload_context)
 
 client = paramiko.SSHClient()
 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 try:
     client.connect(HOST, username=USER, password=PASS, timeout=10)
 except Exception as ex:
-    print(f'Failed to connect SSH host: {ex}')
-    sys.exit(EXIT_DEPLOY_FAILED)
+    exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message=f'Failed to connect SSH host: {ex}', error_code='ssh_connect_failed', data=payload_context)
 print(f'Connected to {HOST}')
 
 # ── STEP 1: Upload changed source files via SFTP ──
@@ -306,7 +321,7 @@ for rel_path in CHANGED_FILES:
         print(f'  FAILED:   {rel_path} -> {e}')
         sftp.close()
         client.close()
-        sys.exit(EXIT_DEPLOY_FAILED)
+        exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message=f'Failed to upload file: {rel_path}', error_code='upload_failed', data=payload_context)
 sftp.close()
 
 # ── STEP 2: Rebuild ONLY the app (backend) — frontend already rebuilt ──
@@ -318,7 +333,7 @@ else:
     if rc != 0:
         print('BUILD FAILED — aborting')
         client.close()
-        sys.exit(EXIT_BUILD_FAILED)
+        exit_with_payload(EXIT_BUILD_FAILED, status='error', message='Build step failed', error_code='build_failed', data=payload_context)
 
 # ── STEP 3: Bring up new containers ──
 print('\n--- STEP 3: docker compose up -d ---')
@@ -348,5 +363,5 @@ run(client, 'curl -sf http://localhost/ -o /dev/null && echo FRONTEND_OK || echo
 
 client.close()
 print('\nDEPLOY_RESULT=DONE')
-sys.exit(EXIT_SUCCESS)
+exit_with_payload(EXIT_SUCCESS, status='success', message='Deploy completed', data=payload_context)
 
