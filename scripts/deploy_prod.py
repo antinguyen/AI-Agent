@@ -6,6 +6,7 @@ EXIT_GENERAL_ERROR = 1
 EXIT_INVALID_ARGS = 2
 EXIT_BUILD_FAILED = 3
 EXIT_DEPLOY_FAILED = 4
+JSON_SCHEMA_VERSION = '1.0.0'
 
 HOST = '192.168.1.200'
 USER = 'saleadmin'
@@ -73,6 +74,7 @@ def utc_now_iso():
 def exit_with_payload(exit_code, status='success', message=None, error_code=None, data=None):
     if PRINT_JSON or PRINT_JSON_ONLY:
         payload = {
+            'schemaVersion': JSON_SCHEMA_VERSION,
             'timestampUtc': utc_now_iso(),
             'exitCode': exit_code,
             'status': status,
@@ -280,7 +282,7 @@ if VERBOSE:
 if PRINT_JSON_ONLY:
     exit_with_payload(EXIT_SUCCESS, status='success', data=payload_context)
 if PRINT_JSON:
-    print(json.dumps({'timestampUtc': utc_now_iso(), 'exitCode': EXIT_SUCCESS, 'status': 'success', **payload_context}, ensure_ascii=False))
+    print(json.dumps({'schemaVersion': JSON_SCHEMA_VERSION, 'timestampUtc': utc_now_iso(), 'exitCode': EXIT_SUCCESS, 'status': 'success', **payload_context}, ensure_ascii=False))
 print(f'Selection mode: {selection_mode}')
 print(f'Prepared {len(CHANGED_FILES)} file(s) for upload')
 if CHANGED_FILES:
