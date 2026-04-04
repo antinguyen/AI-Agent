@@ -422,12 +422,18 @@ print('\n--- STEP 3: docker compose up -d ---')
 compose_up_step = begin_step('compose_up')
 compose_up_rc = run(client, f'cd {REMOTE_BASE} && docker compose up -d 2>&1', 120)
 end_step(compose_up_step, status='success' if compose_up_rc == 0 else 'error', detail={'exitCode': compose_up_rc})
+if compose_up_rc != 0:
+    client.close()
+    exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message='docker compose up failed', error_code='compose_up_failed', data=payload_context)
 
 # ── STEP 4: Health check ──
 print('\n--- STEP 4: Container status ---')
 container_status_step = begin_step('container_status')
 container_status_rc = run(client, 'docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"', 15)
 end_step(container_status_step, status='success' if container_status_rc == 0 else 'error', detail={'exitCode': container_status_rc})
+if container_status_rc != 0:
+    client.close()
+    exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message='docker ps status check failed', error_code='container_status_failed', data=payload_context)
 
 print('\n--- STEP 5: Backend health ping (wait up to 60s for Spring Boot) ---')
 backend_health_step = begin_step('backend_health_ping')
@@ -437,19 +443,27 @@ backend_health_rc = run(
     "  code=$(curl -s -o /dev/null -w '%{http_code}' 'http://localhost:8080/api/v1/products?page=0&size=1' || true); "
     "  if [ \"$code\" = \"200\" ] || [ \"$code\" = \"401\" ] || [ \"$code\" = \"403\" ]; then "
     "    echo BACKEND_OK_HTTP_$code; "
-    "    break; "
+    "    exit 0; "
     "  fi; "
     "  echo \"Waiting for backend... attempt $i/12 (http=$code)\"; "
     "  sleep 5; "
-    "done",
+    "done; "
+    "echo BACKEND_FAIL; "
+    "exit 1",
     75,
 )
 end_step(backend_health_step, status='success' if backend_health_rc == 0 else 'error', detail={'exitCode': backend_health_rc})
+if backend_health_rc != 0:
+    client.close()
+    exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message='Backend health check failed', error_code='backend_health_failed', data=payload_context)
 
 print('\n--- STEP 6: Frontend health ping ---')
 frontend_health_step = begin_step('frontend_health_ping')
-frontend_health_rc = run(client, 'curl -sf http://localhost/ -o /dev/null && echo FRONTEND_OK || echo FRONTEND_FAIL', 10)
+frontend_health_rc = run(client, "curl -sf http://localhost/ -o /dev/null && echo FRONTEND_OK && exit 0; echo FRONTEND_FAIL; exit 1", 10)
 end_step(frontend_health_step, status='success' if frontend_health_rc == 0 else 'error', detail={'exitCode': frontend_health_rc})
+if frontend_health_rc != 0:
+    client.close()
+    exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message='Frontend health check failed', error_code='frontend_health_failed', data=payload_context)
 
 client.close()
 print('\nDEPLOY_RESULT=DONE')
