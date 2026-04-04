@@ -96,11 +96,19 @@ export default function FinancePage() {
 
       <section className="panel-soft rounded-3xl p-5 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Đơn chờ thanh toán</h3>
-        {pageLoading && <p className="text-sm text-gray-500">Đang tải dữ liệu...</p>}
-        {(ordersQueryError || paymentsQueryError || invoicesQueryError) && (
-          <p className="text-sm text-rose-600">{pageErrorMessage}</p>
+        {pageLoading && (
+          <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+            Đang tải dữ liệu tài chính...
+          </div>
         )}
-        {payableOrders.length === 0 && <p className="text-sm text-gray-500">Không có đơn ở trạng thái CONFIRMED.</p>}
+        {(ordersQueryError || paymentsQueryError || invoicesQueryError) && (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{pageErrorMessage}</div>
+        )}
+        {payableOrders.length === 0 && (
+          <div className="rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-sm text-gray-600">
+            Không có đơn ở trạng thái CONFIRMED.
+          </div>
+        )}
         {payableOrders.map((order) => {
           const method = methodByOrder[order.id] ?? 'CASH'
           const note = noteByOrder[order.id] ?? ''
@@ -148,8 +156,12 @@ export default function FinancePage() {
       <section className="grid gap-5 lg:grid-cols-2">
         <div className="panel-soft rounded-3xl p-5 space-y-3">
           <h3 className="text-lg font-semibold text-gray-900">Giao dịch thanh toán</h3>
-          {paymentsLoading && <p className="text-sm text-gray-500">Đang tải payments...</p>}
-          {payments.length === 0 && <p className="text-sm text-gray-500">Chưa có giao dịch thanh toán.</p>}
+          {paymentsLoading && (
+            <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">Đang tải giao dịch thanh toán...</div>
+          )}
+          {payments.length === 0 && (
+            <div className="rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-sm text-gray-600">Chưa có giao dịch thanh toán.</div>
+          )}
           {payments.slice(0, 12).map((p) => (
             <div key={p.id} className="rounded-2xl bg-white/80 border border-stone-200 px-4 py-3 text-sm">
               <div className="flex items-center justify-between gap-3">
@@ -163,8 +175,12 @@ export default function FinancePage() {
 
         <div className="panel-soft rounded-3xl p-5 space-y-3">
           <h3 className="text-lg font-semibold text-gray-900">Hóa đơn</h3>
-          {invoicesLoading && <p className="text-sm text-gray-500">Đang tải invoices...</p>}
-          {invoices.length === 0 && <p className="text-sm text-gray-500">Chưa có hóa đơn.</p>}
+          {invoicesLoading && (
+            <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">Đang tải hóa đơn...</div>
+          )}
+          {invoices.length === 0 && (
+            <div className="rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-sm text-gray-600">Chưa có hóa đơn.</div>
+          )}
           {invoices.slice(0, 12).map((i) => (
             <div key={i.id} className="rounded-2xl bg-white/80 border border-stone-200 px-4 py-3 text-sm">
               <div className="flex items-center justify-between gap-3">

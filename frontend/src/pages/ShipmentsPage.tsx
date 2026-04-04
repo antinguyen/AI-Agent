@@ -139,10 +139,14 @@ export default function ShipmentsPage() {
         </div>
       </section>
 
-      <section className="panel-soft sticky top-4 z-10 rounded-3xl p-5 space-y-4">
+      <section className="panel-soft md:sticky md:top-4 md:z-10 rounded-3xl p-5 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Tạo phiếu giao hàng</h3>
-        {(ordersLoading || shipmentsLoading) && <p className="text-sm text-gray-500">Đang tải dữ liệu fulfillment...</p>}
-        {(ordersError || shipmentsError) && <p className="text-sm text-rose-600">{pageErrorMessage}</p>}
+        {(ordersLoading || shipmentsLoading) && (
+          <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">Đang tải dữ liệu fulfillment...</div>
+        )}
+        {(ordersError || shipmentsError) && (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{pageErrorMessage}</div>
+        )}
 
         <div className="grid gap-3 md:grid-cols-3">
           <div>
@@ -217,7 +221,9 @@ export default function ShipmentsPage() {
           />
         </div>
 
-        {filteredShipments.length === 0 && <p className="text-sm text-gray-500">Không có phiếu giao phù hợp bộ lọc.</p>}
+        {filteredShipments.length === 0 && (
+          <div className="rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-sm text-gray-600">Không có phiếu giao phù hợp bộ lọc.</div>
+        )}
 
         {filteredShipments.map((shipment) => (
           <div key={shipment.id} className="rounded-2xl bg-white/80 border border-stone-200 p-4 space-y-3">

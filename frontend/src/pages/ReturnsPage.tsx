@@ -112,10 +112,14 @@ export default function ReturnsPage() {
         </div>
       </section>
 
-      <section className="panel-soft sticky top-4 z-10 rounded-3xl p-5 space-y-4">
+      <section className="panel-soft md:sticky md:top-4 md:z-10 rounded-3xl p-5 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Tạo phiếu trả hàng</h3>
-        {ordersLoading && <p className="text-sm text-gray-500">Đang tải danh sách đơn hàng...</p>}
-        {(ordersError || detailError || returnsError) && <p className="text-sm text-rose-600">{pageErrorMessage}</p>}
+        {ordersLoading && (
+          <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">Đang tải danh sách đơn hàng...</div>
+        )}
+        {(ordersError || detailError || returnsError) && (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{pageErrorMessage}</div>
+        )}
         <div className="grid gap-3 md:grid-cols-3">
           <div>
             <label className="text-sm font-medium text-gray-700">Đơn hàng (PAID)</label>
@@ -147,7 +151,7 @@ export default function ReturnsPage() {
         )}
 
         {detailLoading ? (
-          <p className="text-sm text-gray-500">Đang tải chi tiết đơn hàng...</p>
+          <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">Đang tải chi tiết đơn hàng...</div>
         ) : orderDetail?.items?.length ? (
           <div className="space-y-2">
             {orderDetail.items.map((item) => (
@@ -169,7 +173,7 @@ export default function ReturnsPage() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500">Chọn đơn hàng để nhập số lượng trả.</p>
+          <div className="rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-sm text-gray-600">Chọn đơn hàng để nhập số lượng trả.</div>
         )}
 
         <button
@@ -183,8 +187,12 @@ export default function ReturnsPage() {
 
       <section className="panel-soft rounded-3xl p-5 space-y-3">
         <h3 className="text-lg font-semibold text-gray-900">Lịch sử trả hàng</h3>
-        {returnsLoading && <p className="text-sm text-gray-500">Đang tải lịch sử trả hàng...</p>}
-        {returns.length === 0 && <p className="text-sm text-gray-500">Chưa có phiếu trả hàng.</p>}
+        {returnsLoading && (
+          <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">Đang tải lịch sử trả hàng...</div>
+        )}
+        {returns.length === 0 && (
+          <div className="rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-sm text-gray-600">Chưa có phiếu trả hàng.</div>
+        )}
         {returns.map((r) => (
           <div key={r.id} className="rounded-2xl bg-white/80 border border-stone-200 px-4 py-3 text-sm">
             <div className="flex items-center justify-between gap-3">
