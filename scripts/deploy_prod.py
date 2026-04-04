@@ -75,6 +75,7 @@ PRINT_JSON = '--print-json' in sys.argv
 PRINT_JSON_ONLY = '--print-json-only' in sys.argv
 HELP = '--help' in sys.argv or '-h' in sys.argv
 HEALTH_MODE = 'soft' if SOFT_HEALTH else 'strict'
+HEALTH_RETRY_SLEEP_SEC = 5
 
 
 def utc_now_iso():
@@ -149,6 +150,7 @@ def print_usage():
     print('  --no-build            Skip docker compose build step')
     print('  --strict-health       Fail deploy when backend/frontend health checks fail (default)')
     print('  --soft-health         Do not fail deploy on backend/frontend health check errors')
+    print('  --health-timeout-sec <n>  Backend health retry window in seconds (default: 60)')
     print('  --print-json          Print machine-readable JSON summary')
     print('  --print-json-only     Print JSON only (no text logs, implies --dry-run)')
     print('  --verbose             Print skipped-file reasons')
@@ -169,12 +171,27 @@ def parse_option_value(option_name):
     return sys.argv[index + 1].strip()
 
 
+def parse_option_int(option_name, default_value, min_value=1):
+    raw = parse_option_value(option_name)
+    if raw is None:
+        return default_value
+    try:
+        parsed = int(raw)
+    except ValueError:
+        exit_with_payload(EXIT_INVALID_ARGS, status='error', message=f'Invalid integer for {option_name}: {raw}', error_code='invalid_option_value')
+    if parsed < min_value:
+        exit_with_payload(EXIT_INVALID_ARGS, status='error', message=f'{option_name} must be >= {min_value}', error_code='invalid_option_value')
+    return parsed
+
+
 BASE_REF = parse_option_value('--base-ref')
+HEALTH_TIMEOUT_SEC = parse_option_int('--health-timeout-sec', 60, 5)
+HEALTH_RETRY_ATTEMPTS = max(1, (HEALTH_TIMEOUT_SEC + HEALTH_RETRY_SLEEP_SEC - 1) // HEALTH_RETRY_SLEEP_SEC)
 
 
 def validate_args():
     known_switches = {
-        '--help', '-h', '--force', '--dry-run', '--verbose', '--no-build', '--strict-health', '--soft-health', '--print-json', '--print-json-only', '--base-ref',
+        '--help', '-h', '--force', '--dry-run', '--verbose', '--no-build', '--strict-health', '--soft-health', '--print-json', '--print-json-only', '--base-ref', '--health-timeout-sec',
     }
     skip_next = False
     for index, arg in enumerate(sys.argv[1:], start=1):
@@ -184,6 +201,11 @@ def validate_args():
         if arg == '--base-ref':
             if index + 1 >= len(sys.argv):
                 exit_with_payload(EXIT_INVALID_ARGS, status='error', message='Missing value for --base-ref', error_code='missing_option_value')
+            skip_next = True
+            continue
+        if arg == '--health-timeout-sec':
+            if index + 1 >= len(sys.argv):
+                exit_with_payload(EXIT_INVALID_ARGS, status='error', message='Missing value for --health-timeout-sec', error_code='missing_option_value')
             skip_next = True
             continue
         if arg.startswith('-') and arg not in known_switches:
@@ -310,6 +332,7 @@ def build_mode_summary(selection_mode, force_deploy, base_ref, dry_run, no_build
     parts.append(f'dryRun={"on" if dry_run else "off"}')
     parts.append(f'noBuild={"on" if no_build else "off"}')
     parts.append(f'healthMode={HEALTH_MODE}')
+    parts.append(f'healthTimeoutSec={HEALTH_TIMEOUT_SEC}')
     parts.append(f'jsonOnly={"on" if print_json_only else "off"}')
     return ', '.join(parts)
 
@@ -337,6 +360,9 @@ payload_context = {
         'strictHealth': not SOFT_HEALTH,
         'softHealth': SOFT_HEALTH,
         'healthMode': HEALTH_MODE,
+        'healthTimeoutSec': HEALTH_TIMEOUT_SEC,
+        'healthRetrySleepSec': HEALTH_RETRY_SLEEP_SEC,
+        'healthRetryAttempts': HEALTH_RETRY_ATTEMPTS,
         'printJson': PRINT_JSON,
         'printJsonOnly': PRINT_JSON_ONLY,
         'verbose': VERBOSE,
@@ -452,18 +478,18 @@ print('\n--- STEP 5: Backend health ping (wait up to 60s for Spring Boot) ---')
 backend_health_step = begin_step('backend_health_ping')
 backend_health_rc = run(
     client,
-    "for i in $(seq 1 12); do "
+    f"for i in $(seq 1 {HEALTH_RETRY_ATTEMPTS}); do "
     "  code=$(curl -s -o /dev/null -w '%{http_code}' 'http://localhost:8080/api/v1/products?page=0&size=1' || true); "
     "  if [ \"$code\" = \"200\" ] || [ \"$code\" = \"401\" ] || [ \"$code\" = \"403\" ]; then "
     "    echo BACKEND_OK_HTTP_$code; "
     "    exit 0; "
     "  fi; "
-    "  echo \"Waiting for backend... attempt $i/12 (http=$code)\"; "
-    "  sleep 5; "
+    f"  echo \"Waiting for backend... attempt $i/{HEALTH_RETRY_ATTEMPTS} (http=$code)\"; "
+    f"  sleep {HEALTH_RETRY_SLEEP_SEC}; "
     "done; "
     "echo BACKEND_FAIL; "
     "exit 1",
-    75,
+    HEALTH_TIMEOUT_SEC + 20,
 )
 end_step(backend_health_step, status='success' if backend_health_rc == 0 else 'error', detail={'exitCode': backend_health_rc})
 if backend_health_rc != 0:
