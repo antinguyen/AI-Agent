@@ -34,6 +34,12 @@ Generate release docs + changelog draft:
 python scripts/new_release_note.py --version 2.8.0 --update-changelog
 ```
 
+One-command pre-release quick flow (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/release_quick.ps1 -Version 2.8.0
+```
+
 ## 2) Local Development
 
 ```bash

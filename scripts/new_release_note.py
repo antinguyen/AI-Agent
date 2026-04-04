@@ -131,6 +131,7 @@ def main() -> int:
         return 2
 
     content = render_template(template_text, args.version, args.release_date)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(content, encoding="utf-8")
 
     if args.update_changelog:
