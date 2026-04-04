@@ -33,6 +33,7 @@ export default function UserPreferencesPage() {
   }
 
   const [saving, setSaving] = useState(false)
+  const hasChanges = Object.keys(draft).length > 0
 
   const onSubmit = async () => {
     setSaving(true)
@@ -59,6 +60,21 @@ export default function UserPreferencesPage() {
         description="Tùy chỉnh định dạng hiển thị, chuyển động và trang mặc định theo từng người dùng."
         icon={<div className="mt-1 rounded-2xl bg-sky-100 p-3 text-sky-700"><Settings2 size={22} /></div>}
       />
+
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Locale hiện tại</p>
+          <p className="mt-2 text-xl font-bold text-sky-700">{form.locale}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Tiền tệ</p>
+          <p className="mt-2 text-xl font-bold text-teal-700">{form.currencyCode}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Trạng thái</p>
+          <p className="mt-2 text-xl font-bold text-indigo-700">{hasChanges ? 'Có thay đổi chưa lưu' : 'Đã đồng bộ'}</p>
+        </div>
+      </section>
 
       <section className="panel-soft rounded-3xl p-5 space-y-5">
         <h3 className="text-lg font-semibold text-gray-900">Hiển thị</h3>
@@ -128,10 +144,10 @@ export default function UserPreferencesPage() {
           Giảm chuyển động (reduce motion)
         </label>
 
-        <div className="flex justify-end">
+        <div className="sticky bottom-3 z-10 flex justify-end rounded-2xl border border-stone-200 bg-white/90 p-3 backdrop-blur">
           <button
             onClick={onSubmit}
-            disabled={saving || isLoading}
+            disabled={saving || isLoading || !hasChanges}
             className="rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-60"
           >
             {saving ? 'Đang lưu...' : 'Lưu tùy chỉnh'}

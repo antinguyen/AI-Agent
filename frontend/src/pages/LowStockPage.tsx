@@ -14,6 +14,9 @@ export default function LowStockPage() {
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v)
 
+  const atRiskValue = data.reduce((sum, product) => sum + product.price * product.stockQuantity, 0)
+  const severeCount = data.filter((product) => product.stockQuantity <= Math.max(1, Math.floor(product.lowStockThreshold / 2))).length
+
   return (
     <div className="space-y-5">
       <PageHero
@@ -23,6 +26,21 @@ export default function LowStockPage() {
         icon={<div className="mt-1 rounded-2xl bg-orange-100 p-3 text-orange-700"><AlertTriangle size={22} /></div>}
         aside={data.length > 0 ? <span className="bg-orange-100 text-orange-700 text-sm font-semibold px-3 py-1.5 rounded-full w-fit">{data.length} sản phẩm cần chú ý</span> : undefined}
       />
+
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Sản phẩm cảnh báo</p>
+          <p className="mt-2 text-2xl font-bold text-orange-700">{data.length}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Mức cảnh báo nặng</p>
+          <p className="mt-2 text-2xl font-bold text-rose-700">{severeCount}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Giá trị tồn kho rủi ro</p>
+          <p className="mt-2 text-2xl font-bold text-teal-700">{formatCurrency(atRiskValue)}</p>
+        </div>
+      </section>
 
       {isError && (
         <div className="panel-soft rounded-2xl px-4 py-3 text-sm text-red-700 bg-red-50/80 border-red-100">

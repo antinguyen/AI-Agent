@@ -3,6 +3,9 @@ import PageHero from '../components/ui/PageHero'
 import { CURRENT_RELEASE, RELEASE_NOTES } from '../lib/releaseNotes'
 
 export default function ReleaseNotesPage() {
+  const totalEntries = RELEASE_NOTES.length
+  const totalHighlights = RELEASE_NOTES.reduce((sum, release) => sum + release.highlights.length, 0)
+
   return (
     <div className="space-y-5">
       <PageHero
@@ -18,6 +21,21 @@ export default function ReleaseNotesPage() {
           </div>
         }
       />
+
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Phiên bản theo dõi</p>
+          <p className="mt-2 text-2xl font-bold text-teal-700">{totalEntries}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Highlights</p>
+          <p className="mt-2 text-2xl font-bold text-sky-700">{totalHighlights}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Bản hiện tại</p>
+          <p className="mt-2 text-2xl font-bold text-indigo-700">{CURRENT_RELEASE.version}</p>
+        </div>
+      </section>
 
       <section className="grid gap-4">
         {RELEASE_NOTES.map((release) => (

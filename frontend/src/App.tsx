@@ -70,8 +70,12 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
 
 function PageLoader() {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-cyan-50 via-white to-sky-100 px-4">
+      <div className="panel-soft w-full max-w-sm rounded-3xl border border-white/70 p-6 text-center shadow-xl">
+        <div className="mx-auto h-10 w-10 rounded-full border-4 border-cyan-600 border-t-transparent animate-spin" />
+        <p className="mt-4 text-sm font-semibold text-slate-800">Đang tải không gian CRM</p>
+        <p className="mt-1 text-xs text-slate-500">Hệ thống đang đồng bộ dữ liệu mới nhất...</p>
+      </div>
     </div>
   )
 }
