@@ -187,6 +187,8 @@ export default function WarehousePage() {
     if (yes) deleteMutation.mutate(w.id)
   }
 
+  const activeWarehouses = warehouses.filter((warehouse) => warehouse.active).length
+
   return (
     <div className="space-y-6">
       <PageHero
@@ -203,6 +205,36 @@ export default function WarehousePage() {
           </button>
         }
       />
+
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><WarehouseIcon size={14} /> Tổng kho</p>
+          <p className="mt-2 text-2xl font-bold text-teal-700">{warehouses.length}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><Package size={14} /> Đang hoạt động</p>
+          <p className="mt-2 text-2xl font-bold text-emerald-700">{activeWarehouses}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><AlertTriangle size={14} /> Ngừng hoạt động</p>
+          <p className="mt-2 text-2xl font-bold text-stone-700">{warehouses.length - activeWarehouses}</p>
+        </div>
+      </section>
+
+      <section className="panel-soft sticky top-4 z-10 rounded-3xl p-4 md:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900">Action rail</h3>
+            <p className="text-xs text-gray-500">Tạo nhanh kho mới hoặc mở tồn kho theo từng kho.</p>
+          </div>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-800"
+          >
+            <Plus size={16} /> Thêm kho hàng
+          </button>
+        </div>
+      </section>
 
       {isLoading ? (
         <div className="flex justify-center py-16">
