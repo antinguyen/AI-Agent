@@ -340,6 +340,10 @@ export default function ProductsPage() {
   const [priceToFilter, setPriceToFilter] = useState('')
   const [yearFromFilter, setYearFromFilter] = useState('')
   const [yearToFilter, setYearToFilter] = useState('')
+  const debouncedPriceFromFilter = useDebouncedValue(priceFromFilter, 300)
+  const debouncedPriceToFilter = useDebouncedValue(priceToFilter, 300)
+  const debouncedYearFromFilter = useDebouncedValue(yearFromFilter, 300)
+  const debouncedYearToFilter = useDebouncedValue(yearToFilter, 300)
   const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null)
   const [selected, setSelected] = useState<Product | null>(null)
   const [importing, setImporting] = useState(false)
@@ -373,7 +377,7 @@ export default function ProductsPage() {
   const { data } = useQuery<PageResponse<Product>>({
     queryKey: [
       'products', page, debouncedKeyword, supplierFilter, brandFilter, originFilter, categoryFilter, currencyFilter,
-      priceFromFilter, priceToFilter, yearFromFilter, yearToFilter,
+      debouncedPriceFromFilter, debouncedPriceToFilter, debouncedYearFromFilter, debouncedYearToFilter,
     ],
     queryFn: () =>
       api.get('/products', {
@@ -387,10 +391,10 @@ export default function ProductsPage() {
           originCountry: originFilter || undefined,
           category: categoryFilter || undefined,
           currencyCode: currencyFilter === 'ALL' ? undefined : currencyFilter,
-          priceFrom: parseNumberFilter(priceFromFilter),
-          priceTo: parseNumberFilter(priceToFilter),
-          yearFrom: parseNumberFilter(yearFromFilter),
-          yearTo: parseNumberFilter(yearToFilter),
+          priceFrom: parseNumberFilter(debouncedPriceFromFilter),
+          priceTo: parseNumberFilter(debouncedPriceToFilter),
+          yearFrom: parseNumberFilter(debouncedYearFromFilter),
+          yearTo: parseNumberFilter(debouncedYearToFilter),
         },
       }).then((r) => r.data),
   })
