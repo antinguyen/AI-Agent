@@ -403,7 +403,7 @@ export default function EmployeesPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {isLoading && Array.from({ length: 5 }).map((_, index) => (
-                <tr key={index}><td colSpan={6} className="px-3 py-4"><div className="h-10 rounded-xl bg-stone-100/80 animate-pulse" /></td></tr>
+                <tr key={index}><td colSpan={6} className="px-3 py-4"><div className="crm-skeleton-block h-10 rounded-xl" /></td></tr>
               ))}
               {data?.content.map((e) => (
                 <tr key={e.id} className="hover:bg-stone-50/70 transition-colors">
@@ -446,7 +446,7 @@ export default function EmployeesPage() {
                 </tr>
               ))}
               {!isLoading && data?.content.length === 0 && (
-                <tr><td colSpan={6} className="text-center py-14 text-gray-400">Không có nhân viên</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8"><div className="crm-empty-card text-sm">Không có nhân viên</div></td></tr>
               )}
             </tbody>
           </table>

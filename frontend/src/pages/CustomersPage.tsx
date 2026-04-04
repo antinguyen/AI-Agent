@@ -181,7 +181,7 @@ export default function CustomersPage() {
       <div className="space-y-3 md:hidden">
         {!data && Array.from({ length: 4 }).map((_, index) => (
           <div key={index} className="panel-soft rounded-3xl p-4">
-            <div className="h-24 rounded-2xl bg-stone-100/80 animate-pulse" />
+            <div className="crm-skeleton-block h-24 rounded-2xl" />
           </div>
         ))}
         {data?.content.map((customer) => (
@@ -230,7 +230,7 @@ export default function CustomersPage() {
           </div>
         ))}
         {data?.content.length === 0 && (
-          <div className="panel-soft rounded-3xl p-8 text-center text-sm text-gray-500">Không có khách hàng phù hợp</div>
+          <div className="panel-soft rounded-3xl p-8"><div className="crm-empty-card text-sm">Không có khách hàng phù hợp</div></div>
         )}
       </div>
 
@@ -251,7 +251,7 @@ export default function CustomersPage() {
             {!data && Array.from({ length: 5 }).map((_, index) => (
               <tr key={index}>
                 <td colSpan={6} className="px-4 py-4">
-                  <div className="h-10 rounded-xl bg-stone-100/80 animate-pulse" />
+                  <div className="crm-skeleton-block h-10 rounded-xl" />
                 </td>
               </tr>
             ))}
@@ -285,7 +285,7 @@ export default function CustomersPage() {
               </tr>
             ))}
             {data?.content.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-14 text-gray-400">Không có khách hàng phù hợp</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8"><div className="crm-empty-card text-sm">Không có khách hàng phù hợp</div></td></tr>
             )}
           </tbody>
         </table>
