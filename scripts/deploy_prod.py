@@ -50,6 +50,10 @@ ALLOWED_EXACT_FILES = {
     'docker-compose.yml',
 }
 
+FORCE_DEPLOY = '--force' in sys.argv
+DRY_RUN = '--dry-run' in sys.argv
+VERBOSE = '--verbose' in sys.argv
+
 
 def collect_git_file_list(args):
     cmd = ['git', '-C', LOCAL_BASE, *args]
@@ -59,22 +63,29 @@ def collect_git_file_list(args):
     return [line.strip().replace('\\', '/') for line in result.stdout.splitlines() if line.strip()]
 
 
-def is_deployable_file(rel_path):
+def get_non_deployable_reason(rel_path):
     normalized = rel_path.replace('\\', '/').strip()
     if not normalized:
-        return False
+        return 'empty-path'
     if any(normalized.startswith(prefix) for prefix in IGNORED_PATH_PREFIXES):
-        return False
+        return 'ignored-prefix'
     if normalized.endswith('.pyc'):
-        return False
+        return 'compiled-python-artifact'
     if normalized in ALLOWED_EXACT_FILES:
-        return True
-    return any(normalized.startswith(prefix) for prefix in ALLOWED_PATH_PREFIXES)
+        return None
+    if any(normalized.startswith(prefix) for prefix in ALLOWED_PATH_PREFIXES):
+        return None
+    return 'outside-deploy-scope'
 
 
-def resolve_changed_files():
+def is_deployable_file(rel_path):
+    return get_non_deployable_reason(rel_path) is None
+
+
+def resolve_changed_files(force_mode=False):
     combined = []
     seen = set()
+    skipped = []
 
     for args in (
         ['diff', '--name-only', '--cached'],
@@ -90,21 +101,33 @@ def resolve_changed_files():
 
     deployable = []
     for rel_path in combined:
-        if not is_deployable_file(rel_path):
+        reason = get_non_deployable_reason(rel_path)
+        if reason:
+            skipped.append((rel_path, reason))
             continue
         local_path = os.path.join(LOCAL_BASE, rel_path.replace('/', os.sep))
         if os.path.isfile(local_path):
             deployable.append(rel_path)
+        else:
+            skipped.append((rel_path, 'file-not-found'))
+
+    if force_mode:
+        fallback = []
+        for rel_path in DEFAULT_DEPLOY_FILES:
+            local_path = os.path.join(LOCAL_BASE, rel_path.replace('/', os.sep))
+            if os.path.isfile(local_path):
+                fallback.append(rel_path)
+        return fallback, 'FORCE_DEFAULT_LIST', combined, skipped
 
     if combined:
-        return deployable
+        return deployable, 'GIT_CHANGES', combined, skipped
 
     fallback = []
     for rel_path in DEFAULT_DEPLOY_FILES:
         local_path = os.path.join(LOCAL_BASE, rel_path.replace('/', os.sep))
         if os.path.isfile(local_path):
             fallback.append(rel_path)
-    return fallback
+    return fallback, 'DEFAULT_BOOTSTRAP', combined, skipped
 
 def run(client, cmd, timeout=60):
     print(f'  $ {cmd}')
@@ -117,10 +140,22 @@ def run(client, cmd, timeout=60):
     print(f'  [exit {rc}]')
     return rc
 
-CHANGED_FILES = resolve_changed_files()
+CHANGED_FILES, selection_mode, all_candidates, skipped_files = resolve_changed_files(FORCE_DEPLOY)
+print(f'Selection mode: {selection_mode}')
 print(f'Prepared {len(CHANGED_FILES)} file(s) for upload')
+if CHANGED_FILES:
+    print('Selected files:')
+    for rel_path in CHANGED_FILES:
+        print(f'  - {rel_path}')
+if VERBOSE and skipped_files:
+    print('Skipped files:')
+    for rel_path, reason in skipped_files:
+        print(f'  - {rel_path} ({reason})')
 if not CHANGED_FILES:
     print('No deployable files detected from git changes; nothing to deploy')
+    sys.exit(0)
+if DRY_RUN:
+    print('Dry-run mode enabled; stopping before SSH/deploy steps')
     sys.exit(0)
 
 client = paramiko.SSHClient()
