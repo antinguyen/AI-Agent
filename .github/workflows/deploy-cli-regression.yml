@@ -1,0 +1,33 @@
+name: Deploy CLI Regression
+
+on:
+  push:
+    branches: ["master", "main", "develop"]
+    paths:
+      - "scripts/deploy_prod.py"
+      - "scripts/test_deploy_prod_cli.py"
+      - ".github/workflows/deploy-cli-regression.yml"
+  pull_request:
+    branches: ["master", "main", "develop"]
+    paths:
+      - "scripts/deploy_prod.py"
+      - "scripts/test_deploy_prod_cli.py"
+      - ".github/workflows/deploy-cli-regression.yml"
+
+jobs:
+  deploy-cli-regression:
+    name: Deploy CLI Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run deploy CLI regression tests
+        run: python -u scripts/test_deploy_prod_cli.py
