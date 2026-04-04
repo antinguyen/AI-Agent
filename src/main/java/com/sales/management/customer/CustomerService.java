@@ -90,6 +90,10 @@ public class CustomerService {
         customer.setName(request.getName().trim());
         customer.setPhone(request.getPhone() == null ? null : request.getPhone().trim());
         customer.setEmail(request.getEmail() == null ? null : request.getEmail().trim());
+        customer.setAddress(request.getAddress() == null ? null : request.getAddress().trim());
+        customer.setTaxCode(request.getTaxCode() == null ? null : request.getTaxCode().trim());
+        customer.setLegalRepresentative(request.getLegalRepresentative() == null ? null : request.getLegalRepresentative().trim());
+        customer.setContactPerson(request.getContactPerson() == null ? null : request.getContactPerson().trim());
         customer.setActive(request.getActive());
     }
 
@@ -100,6 +104,10 @@ public class CustomerService {
                 customer.getName(),
                 customer.getPhone(),
                 customer.getEmail(),
+                customer.getAddress(),
+                customer.getTaxCode(),
+                customer.getLegalRepresentative(),
+                customer.getContactPerson(),
                 customer.getActive(),
                 customer.getCreatedAt(),
                 customer.getUpdatedAt(),

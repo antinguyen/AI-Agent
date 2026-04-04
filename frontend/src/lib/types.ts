@@ -191,6 +191,9 @@ export interface Customer {
   email?: string
   phone?: string
   address?: string
+  taxCode?: string
+  legalRepresentative?: string
+  contactPerson?: string
   active: boolean
 }
 
@@ -200,6 +203,9 @@ export interface CustomerRequest {
   email?: string
   phone?: string
   address?: string
+  taxCode?: string
+  legalRepresentative?: string
+  contactPerson?: string
   active?: boolean
 }
 

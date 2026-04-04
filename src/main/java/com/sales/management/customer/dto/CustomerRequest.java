@@ -22,6 +22,18 @@ public class CustomerRequest {
     @Size(max = 255, message = "email max length is 255")
     private String email;
 
+    @Size(max = 500, message = "address max length is 500")
+    private String address;
+
+    @Size(max = 32, message = "taxCode max length is 32")
+    private String taxCode;
+
+    @Size(max = 255, message = "legalRepresentative max length is 255")
+    private String legalRepresentative;
+
+    @Size(max = 255, message = "contactPerson max length is 255")
+    private String contactPerson;
+
     @NotNull(message = "active is required")
     private Boolean active;
 
@@ -63,5 +75,37 @@ public class CustomerRequest {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getTaxCode() {
+        return taxCode;
+    }
+
+    public void setTaxCode(String taxCode) {
+        this.taxCode = taxCode;
+    }
+
+    public String getLegalRepresentative() {
+        return legalRepresentative;
+    }
+
+    public void setLegalRepresentative(String legalRepresentative) {
+        this.legalRepresentative = legalRepresentative;
+    }
+
+    public String getContactPerson() {
+        return contactPerson;
+    }
+
+    public void setContactPerson(String contactPerson) {
+        this.contactPerson = contactPerson;
     }
 }

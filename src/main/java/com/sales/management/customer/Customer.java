@@ -30,6 +30,18 @@ public class Customer {
     @Column(length = 255)
     private String email;
 
+    @Column(length = 500)
+    private String address;
+
+    @Column(length = 32)
+    private String taxCode;
+
+    @Column(length = 255)
+    private String legalRepresentative;
+
+    @Column(length = 255)
+    private String contactPerson;
+
     @Column(nullable = false)
     private Boolean active;
 
@@ -104,6 +116,38 @@ public class Customer {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getTaxCode() {
+        return taxCode;
+    }
+
+    public void setTaxCode(String taxCode) {
+        this.taxCode = taxCode;
+    }
+
+    public String getLegalRepresentative() {
+        return legalRepresentative;
+    }
+
+    public void setLegalRepresentative(String legalRepresentative) {
+        this.legalRepresentative = legalRepresentative;
+    }
+
+    public String getContactPerson() {
+        return contactPerson;
+    }
+
+    public void setContactPerson(String contactPerson) {
+        this.contactPerson = contactPerson;
     }
 
     public Instant getCreatedAt() {

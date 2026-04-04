@@ -49,6 +49,20 @@ function CustomerForm({ defaultValues, onSubmit, isPending }: {
           <input {...register('phone')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
         </div>
       </div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div>
+          <label className="text-sm font-medium text-gray-700">Mã số thuế</label>
+          <input {...register('taxCode')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700">Người đại diện pháp luật</label>
+          <input {...register('legalRepresentative')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700">Người liên hệ chính</label>
+        <input {...register('contactPerson')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+      </div>
       <div>
         <label className="text-sm font-medium text-gray-700">Địa chỉ</label>
         <input {...register('address')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
@@ -209,12 +223,20 @@ export default function CustomersPage() {
             </div>
             <div className="grid gap-3 text-sm">
               <div className="rounded-2xl bg-stone-50/90 px-3 py-2.5">
+                <p className="text-gray-500">Mã số thuế</p>
+                <p className="mt-1 font-medium text-gray-900">{customer.taxCode ?? '—'}</p>
+              </div>
+              <div className="rounded-2xl bg-stone-50/90 px-3 py-2.5">
                 <p className="text-gray-500">Email</p>
                 <p className="mt-1 font-medium text-gray-900">{customer.email ?? '—'}</p>
               </div>
               <div className="rounded-2xl bg-stone-50/90 px-3 py-2.5">
                 <p className="text-gray-500">Điện thoại</p>
                 <p className="mt-1 font-medium text-gray-900">{customer.phone ?? '—'}</p>
+              </div>
+              <div className="rounded-2xl bg-stone-50/90 px-3 py-2.5">
+                <p className="text-gray-500">Người liên hệ</p>
+                <p className="mt-1 font-medium text-gray-900">{customer.contactPerson ?? customer.legalRepresentative ?? '—'}</p>
               </div>
             </div>
             <div className="flex gap-2">
@@ -253,6 +275,7 @@ export default function CustomersPage() {
             <tr>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Mã KH</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Tên</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">MST</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Email</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Điện thoại</th>
               <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Trạng thái</th>
@@ -262,7 +285,7 @@ export default function CustomersPage() {
           <tbody className="divide-y divide-gray-100">
             {!data && Array.from({ length: 5 }).map((_, index) => (
               <tr key={index}>
-                <td colSpan={6} className="px-4 py-4">
+                <td colSpan={7} className="px-4 py-4">
                   <div className="crm-skeleton-block h-10 rounded-xl" />
                 </td>
               </tr>
@@ -271,6 +294,7 @@ export default function CustomersPage() {
               <tr key={c.id} className="hover:bg-stone-50/70 transition-colors">
                 <td className="px-4 py-3 font-mono text-xs text-gray-600">{c.code}</td>
                 <td className="px-4 py-3 font-medium text-gray-900">{c.name}</td>
+                <td className="px-4 py-3 text-gray-600">{c.taxCode ?? '—'}</td>
                 <td className="px-4 py-3 text-gray-600">{c.email ?? '—'}</td>
                 <td className="px-4 py-3 text-gray-600">{c.phone ?? '—'}</td>
                 <td className="px-4 py-3 text-center">
@@ -297,7 +321,7 @@ export default function CustomersPage() {
               </tr>
             ))}
             {data?.content.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8"><div className="crm-empty-card text-sm">Không có khách hàng phù hợp</div></td></tr>
+              <tr><td colSpan={7} className="px-4 py-8"><div className="crm-empty-card text-sm">Không có khách hàng phù hợp</div></td></tr>
             )}
           </tbody>
         </table>
@@ -325,7 +349,17 @@ export default function CustomersPage() {
       {modalMode === 'edit' && selected && (
         <ModalShell title="Cập nhật khách hàng" description="Điều chỉnh thông tin liên hệ và mã nhận diện khách hàng." onClose={() => setModalMode(null)}>
           <CustomerForm
-            defaultValues={{ code: selected.code, name: selected.name, email: selected.email, phone: selected.phone, address: selected.address, active: selected.active }}
+            defaultValues={{
+              code: selected.code,
+              name: selected.name,
+              email: selected.email,
+              phone: selected.phone,
+              address: selected.address,
+              taxCode: selected.taxCode,
+              legalRepresentative: selected.legalRepresentative,
+              contactPerson: selected.contactPerson,
+              active: selected.active,
+            }}
             onSubmit={(d) => updateMutation.mutate(d)}
             isPending={updateMutation.isPending}
           />
