@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Search, Users } from 'lucide-react'
 import api from '../lib/api'
 import { useConfirmDialog } from '../components/ui/ConfirmDialogProvider'
@@ -45,6 +45,7 @@ export default function UsersPage() {
         active: activeFilter === 'ALL' ? undefined : activeFilter,
       },
     }).then((r) => r.data),
+    placeholderData: keepPreviousData,
   })
 
   const users = data?.content ?? []

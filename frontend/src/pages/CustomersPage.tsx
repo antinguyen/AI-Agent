@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Pencil, Trash2, Search } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import api from '../lib/api'
@@ -99,6 +99,7 @@ export default function CustomersPage() {
     queryKey: ['customers', page, debouncedSearch],
     queryFn: () =>
       api.get('/customers', { params: { page, size: 15, name: debouncedSearch || undefined } }).then((r) => r.data),
+    placeholderData: keepPreviousData,
   })
 
   const createMutation = useMutation({
