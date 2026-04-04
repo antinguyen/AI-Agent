@@ -117,10 +117,10 @@ cat backup.sql | docker exec -i sales-postgres psql -U postgres -d sales_managem
 3. Tạo release note từ template:
 
 ```bash
-python scripts/new_release_note.py --version 2.8.0
+python scripts/new_release_note.py --version 2.8.0 --update-changelog
 ```
 
-	File sinh ra mặc định: `RELEASE_ANNOUNCEMENT_2_8_0.md` (có thể đổi bằng `--output`).
+	File sinh ra mặc định: `RELEASE_ANNOUNCEMENT_2_8_0.md` (có thể đổi bằng `--output`) và tự chèn section mới vào `CHANGELOG.md`.
 4. Kiểm tra thay đổi DB migration (nếu có), đảm bảo đã review rollback strategy.
 5. Chuẩn bị backup PostgreSQL trước deploy production.
 6. Xác nhận secret bắt buộc cho smoke (`SMOKE_PASSWORD`) còn hiệu lực.
