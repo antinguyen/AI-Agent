@@ -98,6 +98,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(defaultValues?.imageUrl ?? null)
+  const [showAdvanced, setShowAdvanced] = useState(Boolean(defaultValues))
   const currencyCode = watch('currencyCode')
   const imageUrl = watch('imageUrl')
 
@@ -161,7 +162,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="rounded-2xl bg-stone-50/90 px-4 py-3 text-sm text-gray-600">
-        Quản trị hồ sơ sản phẩm chuyên nghiệp: định giá, nguồn gốc, nhà cung cấp, thương hiệu và thông tin nhập hàng.
+        Điền các thông tin cốt lõi trước. Nhóm thông tin nâng cao có thể mở thêm khi cần.
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -211,7 +212,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
           {imageUrl && <p className="mt-1 text-xs text-gray-500">Đã cập nhật ảnh: {imageUrl}</p>}
         </div>
       </div>
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <div>
           <label className="text-sm font-medium text-gray-700">Đơn giá bán</label>
           <input type="number" step="0.01" {...register('price', { required: 'Bắt buộc', min: { value: 1, message: 'Giá phải lớn hơn 0' }, valueAsNumber: true })} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
@@ -230,6 +231,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
             ))}
           </select>
           {errors.currencyCode && <p className="text-red-500 text-xs">{errors.currencyCode.message}</p>}
+          <p className="mt-1 text-xs text-teal-700">Tỷ giá ngân hàng sẽ tự cập nhật khi chọn loại tiền.</p>
         </div>
         <div>
           <label className="text-sm font-medium text-gray-700">Tỷ giá ngân hàng (VND)</label>
@@ -253,49 +255,60 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
           {errors.vatRate && <p className="text-red-500 text-xs">{errors.vatRate.message}</p>}
         </div>
       </div>
-      <div className="grid grid-cols-5 gap-3">
-        <div>
-          <label className="text-sm font-medium text-gray-700">Nhà cung cấp</label>
-          <select {...register('supplier')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <option value="">-- Chọn nhà cung cấp --</option>
-            {(options?.suppliers ?? []).map((supplier) => (
-              <option key={supplier} value={supplier}>{supplier}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700">Hãng</label>
-          <select {...register('brand')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <option value="">-- Chọn hãng --</option>
-            {(options?.brands ?? []).map((brand) => (
-              <option key={brand} value={brand}>{brand}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700">Xuất xứ</label>
-          <select {...register('originCountry')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <option value="">-- Chọn xuất xứ --</option>
-            {(options?.originCountries ?? []).map((origin) => (
-              <option key={origin} value={origin}>{origin}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700">Danh mục</label>
-          <select {...register('category')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <option value="General">General</option>
-            {(options?.categories ?? []).map((category) => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700">Năm sản xuất</label>
-          <input type="number" {...register('manufactureYear', { min: { value: 1900, message: '>= 1900' }, max: { value: 2100, message: '<= 2100' }, valueAsNumber: true })} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
-          {errors.manufactureYear && <p className="text-red-500 text-xs">{errors.manufactureYear.message}</p>}
-        </div>
-      </div>
+      <section className="rounded-2xl border border-stone-200 bg-white/80 px-4 py-3">
+        <button
+          type="button"
+          onClick={() => setShowAdvanced((current) => !current)}
+          className="text-sm font-semibold text-teal-700 hover:text-teal-800"
+        >
+          {showAdvanced ? 'Ẩn thông tin nâng cao' : 'Hiện thông tin nâng cao'}
+        </button>
+        {showAdvanced && (
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Nhà cung cấp</label>
+              <select {...register('supplier')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                <option value="">-- Chọn nhà cung cấp --</option>
+                {(options?.suppliers ?? []).map((supplier) => (
+                  <option key={supplier} value={supplier}>{supplier}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Hãng</label>
+              <select {...register('brand')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                <option value="">-- Chọn hãng --</option>
+                {(options?.brands ?? []).map((brand) => (
+                  <option key={brand} value={brand}>{brand}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Xuất xứ</label>
+              <select {...register('originCountry')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                <option value="">-- Chọn xuất xứ --</option>
+                {(options?.originCountries ?? []).map((origin) => (
+                  <option key={origin} value={origin}>{origin}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Danh mục</label>
+              <select {...register('category')} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
+                <option value="General">General</option>
+                {(options?.categories ?? []).map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Năm sản xuất</label>
+              <input type="number" {...register('manufactureYear', { min: { value: 1900, message: '>= 1900' }, max: { value: 2100, message: '<= 2100' }, valueAsNumber: true })} className="mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+              {errors.manufactureYear && <p className="text-red-500 text-xs">{errors.manufactureYear.message}</p>}
+            </div>
+          </div>
+        )}
+      </section>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-sm font-medium text-gray-700">Tồn kho</label>
