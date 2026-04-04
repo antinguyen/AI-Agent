@@ -55,6 +55,27 @@ DRY_RUN = '--dry-run' in sys.argv
 VERBOSE = '--verbose' in sys.argv
 
 
+def parse_option_value(option_name):
+    if option_name not in sys.argv:
+        return None
+    index = sys.argv.index(option_name)
+    if index + 1 >= len(sys.argv):
+        print(f'Missing value for {option_name}')
+        sys.exit(2)
+    return sys.argv[index + 1].strip()
+
+
+BASE_REF = parse_option_value('--base-ref')
+
+
+def git_ref_exists(ref_name):
+    if not ref_name:
+        return False
+    cmd = ['git', '-C', LOCAL_BASE, 'rev-parse', '--verify', '--quiet', ref_name]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    return result.returncode == 0
+
+
 def collect_git_file_list(args):
     cmd = ['git', '-C', LOCAL_BASE, *args]
     result = subprocess.run(cmd, capture_output=True, text=True)
@@ -82,17 +103,30 @@ def is_deployable_file(rel_path):
     return get_non_deployable_reason(rel_path) is None
 
 
-def resolve_changed_files(force_mode=False):
+def resolve_changed_files(force_mode=False, base_ref=None):
     combined = []
     seen = set()
     skipped = []
 
-    for args in (
-        ['diff', '--name-only', '--cached'],
-        ['diff', '--name-only'],
-        ['ls-files', '--others', '--exclude-standard'],
-        ['show', '--name-only', '--pretty=format:', 'HEAD'],
-    ):
+    if base_ref:
+        if not git_ref_exists(base_ref):
+            print(f'Invalid --base-ref: {base_ref}')
+            sys.exit(2)
+        arg_sets = (
+            ['diff', '--name-only', f'{base_ref}...HEAD'],
+            ['diff', '--name-only', '--cached'],
+            ['diff', '--name-only'],
+            ['ls-files', '--others', '--exclude-standard'],
+        )
+    else:
+        arg_sets = (
+            ['diff', '--name-only', '--cached'],
+            ['diff', '--name-only'],
+            ['ls-files', '--others', '--exclude-standard'],
+            ['show', '--name-only', '--pretty=format:', 'HEAD'],
+        )
+
+    for args in arg_sets:
         for rel_path in collect_git_file_list(args):
             if rel_path in seen:
                 continue
@@ -120,7 +154,8 @@ def resolve_changed_files(force_mode=False):
         return fallback, 'FORCE_DEFAULT_LIST', combined, skipped
 
     if combined:
-        return deployable, 'GIT_CHANGES', combined, skipped
+        mode = f'BASE_REF({base_ref})' if base_ref else 'GIT_CHANGES'
+        return deployable, mode, combined, skipped
 
     fallback = []
     for rel_path in DEFAULT_DEPLOY_FILES:
@@ -140,7 +175,7 @@ def run(client, cmd, timeout=60):
     print(f'  [exit {rc}]')
     return rc
 
-CHANGED_FILES, selection_mode, all_candidates, skipped_files = resolve_changed_files(FORCE_DEPLOY)
+CHANGED_FILES, selection_mode, all_candidates, skipped_files = resolve_changed_files(FORCE_DEPLOY, BASE_REF)
 print(f'Selection mode: {selection_mode}')
 print(f'Prepared {len(CHANGED_FILES)} file(s) for upload')
 if CHANGED_FILES:
