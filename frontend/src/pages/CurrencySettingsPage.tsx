@@ -142,7 +142,7 @@ export default function CurrencySettingsPage() {
         </div>
       </section>
 
-      <section className="panel-soft sticky top-4 z-10 rounded-3xl p-5 space-y-4">
+      <section className="panel-soft md:sticky md:top-4 md:z-10 rounded-3xl p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-gray-900">Danh sách tỷ giá</h3>
           <div className="flex items-center gap-2">
@@ -172,7 +172,7 @@ export default function CurrencySettingsPage() {
         {isLoading && (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="h-12 animate-pulse rounded-xl bg-stone-100/80" />
+              <div key={index} className="crm-skeleton-block h-12 rounded-xl" />
             ))}
           </div>
         )}
@@ -227,7 +227,7 @@ export default function CurrencySettingsPage() {
       <section className="panel-soft rounded-3xl p-5 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Lịch sử thay đổi tỷ giá</h3>
         {(!auditData || auditData.content.length === 0) ? (
-          <p className="text-sm text-gray-500">Chưa có thay đổi nào được ghi nhận.</p>
+          <div className="crm-empty-card text-sm">Chưa có thay đổi nào được ghi nhận.</div>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-stone-200 bg-white">
             <table className="min-w-full text-sm">

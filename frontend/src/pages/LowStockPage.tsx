@@ -51,11 +51,11 @@ export default function LowStockPage() {
       <div className="space-y-3 md:hidden">
         {isLoading && Array.from({ length: 4 }).map((_, index) => (
           <div key={index} className="panel-soft rounded-3xl p-4">
-            <div className="h-24 rounded-2xl bg-stone-100/80 animate-pulse" />
+            <div className="crm-skeleton-block h-24 rounded-2xl" />
           </div>
         ))}
         {!isLoading && data.length === 0 && (
-          <div className="panel-soft rounded-3xl p-8 text-center text-sm text-gray-500">Không có sản phẩm nào sắp hết hàng</div>
+          <div className="panel-soft rounded-3xl p-8"><div className="crm-empty-card text-sm">Không có sản phẩm nào sắp hết hàng</div></div>
         )}
         {data.map((product) => (
           <div key={product.id} className="panel-soft rounded-3xl p-4 space-y-4">
@@ -94,10 +94,10 @@ export default function LowStockPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {isLoading && Array.from({ length: 5 }).map((_, index) => (
-              <tr key={index}><td colSpan={5} className="px-4 py-4"><div className="h-10 rounded-xl bg-stone-100/80 animate-pulse" /></td></tr>
+              <tr key={index}><td colSpan={5} className="px-4 py-4"><div className="crm-skeleton-block h-10 rounded-xl" /></td></tr>
             ))}
             {!isLoading && data.length === 0 && (
-              <tr><td colSpan={5} className="text-center py-14 text-gray-400">Không có sản phẩm nào sắp hết hàng</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8"><div className="crm-empty-card text-sm">Không có sản phẩm nào sắp hết hàng</div></td></tr>
             )}
             {data.map((p) => (
               <tr key={p.id} className="hover:bg-orange-50/60 transition-colors">

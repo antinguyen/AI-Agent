@@ -157,10 +157,10 @@ export default function DashboardPage() {
           <h3 className="font-semibold text-gray-900 mb-1">5 đơn hàng gần nhất</h3>
           <p className="text-sm text-gray-500 mb-4">Biểu đồ nhanh theo tổng tiền đơn hàng mới tạo.</p>
           {recentOrders === undefined ? (
-            <div className="h-[200px] rounded-2xl bg-stone-100/80 animate-pulse" />
+            <div className="crm-skeleton-block h-[200px] rounded-2xl" />
           ) : chartData.length === 0 ? (
-            <div className="h-[200px] rounded-2xl bg-stone-50 border border-dashed border-stone-200 flex items-center justify-center text-sm text-gray-500">
-              Chưa có dữ liệu để hiển thị biểu đồ
+            <div className="h-[200px] rounded-2xl flex items-center justify-center">
+              <div className="crm-empty-card text-sm">Chưa có dữ liệu để hiển thị biểu đồ</div>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
@@ -181,9 +181,9 @@ export default function DashboardPage() {
           <p className="text-sm text-gray-500 mb-4">Các đơn hàng gần nhất để theo dõi xử lý ngay.</p>
           <div className="space-y-3">
             {recentOrders === undefined && Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="h-16 rounded-2xl bg-stone-100/80 animate-pulse" />
+              <div key={index} className="crm-skeleton-block h-16 rounded-2xl" />
             ))}
-            {recentOrders?.length === 0 && <p className="text-gray-400 text-sm">Chưa có đơn hàng</p>}
+            {recentOrders?.length === 0 && <div className="crm-empty-card text-sm">Chưa có đơn hàng</div>}
             {recentOrders?.map((o) => (
               <div key={o.id} className="rounded-2xl bg-white/70 border border-white px-4 py-3 flex items-center justify-between gap-4">
                 <div>
@@ -208,13 +208,11 @@ export default function DashboardPage() {
           {recentOrders === undefined ? (
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="h-12 rounded-2xl bg-stone-100/80 animate-pulse" />
+                <div key={index} className="crm-skeleton-block h-12 rounded-2xl" />
               ))}
             </div>
           ) : statusRows.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 px-4 py-6 text-sm text-gray-500">
-              Chưa đủ dữ liệu trạng thái đơn hàng để phân tích.
-            </div>
+            <div className="crm-empty-card text-sm">Chưa đủ dữ liệu trạng thái đơn hàng để phân tích.</div>
           ) : (
             <div className="space-y-3">
               {statusRows.map(([status, count]) => {
