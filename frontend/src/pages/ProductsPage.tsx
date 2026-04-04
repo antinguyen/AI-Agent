@@ -106,19 +106,24 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
     api.get('/products/options').then((r) => setOptions(r.data)).catch(() => setOptions(null))
   }, [])
 
-  const currencyMap = useMemo(
-    () => new Map((options?.currencies ?? []).map((c) => [c.currencyCode, c.rateToVnd])),
+  const currencyMetaMap = useMemo(
+    () => new Map((options?.currencies ?? []).map((c) => [c.currencyCode, { rateToVnd: c.rateToVnd, bankName: c.bankName }])),
     [options?.currencies],
   )
 
+  const selectedCurrency = (currencyCode || 'VND').toUpperCase()
+  const selectedCurrencyMeta = selectedCurrency === 'VND'
+    ? { rateToVnd: 1, bankName: 'LOCAL' }
+    : currencyMetaMap.get(selectedCurrency)
+
   useEffect(() => {
     const selected = (currencyCode || 'VND').toUpperCase()
-    const rate = selected === 'VND' ? 1 : currencyMap.get(selected)
+    const rate = selected === 'VND' ? 1 : currencyMetaMap.get(selected)?.rateToVnd
     if (rate) {
       setValue('exchangeRate', Number(rate), { shouldDirty: true, shouldValidate: true })
       setValue('currencyCode', selected, { shouldDirty: true, shouldValidate: true })
     }
-  }, [currencyCode, currencyMap, setValue])
+  }, [currencyCode, currencyMetaMap, setValue])
 
   useEffect(() => {
     if (!imageUrl) {
@@ -232,6 +237,7 @@ function ProductForm({ defaultValues, onSubmit, isPending }: {
           </select>
           {errors.currencyCode && <p className="text-red-500 text-xs">{errors.currencyCode.message}</p>}
           <p className="mt-1 text-xs text-teal-700">Tỷ giá ngân hàng sẽ tự cập nhật khi chọn loại tiền.</p>
+          <p className="mt-1 text-xs text-gray-500">Nguồn tỷ giá: {selectedCurrencyMeta?.bankName ?? 'Chưa cấu hình'}</p>
         </div>
         <div>
           <label className="text-sm font-medium text-gray-700">Tỷ giá ngân hàng (VND)</label>
