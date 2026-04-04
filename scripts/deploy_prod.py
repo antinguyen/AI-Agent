@@ -1,4 +1,4 @@
-import paramiko, sys, os
+import paramiko, sys, os, subprocess
 
 HOST = '192.168.1.200'
 USER = 'saleadmin'
@@ -6,17 +6,11 @@ PASS = 'Kcgqhdltd1@'
 REMOTE_BASE = '/home/saleadmin/sales-management-deploy/current'
 LOCAL_BASE = os.path.join(os.path.dirname(os.path.dirname(__file__)))
 
-# Files changed in the UI/UX fix + backend improvement session
-CHANGED_FILES = [
-    # Auth security hotfix: prevent public role escalation
+DEFAULT_DEPLOY_FILES = [
     'src/main/java/com/sales/management/auth/AuthController.java',
     'src/main/java/com/sales/management/auth/AuthService.java',
     'src/main/java/com/sales/management/auth/dto/PublicRegisterRequest.java',
-
-    # DB migration — V21 adds category + vat_rate columns
     'src/main/resources/db/migration/V21__add_product_category_and_vat.sql',
-
-    # Product entity + full product package (has category/vatRate changes)
     'src/main/java/com/sales/management/product/Product.java',
     'src/main/java/com/sales/management/product/ProductService.java',
     'src/main/java/com/sales/management/product/ProductController.java',
@@ -24,20 +18,12 @@ CHANGED_FILES = [
     'src/main/java/com/sales/management/product/ProductOptionsResponse.java',
     'src/main/java/com/sales/management/product/dto/ProductCreateRequest.java',
     'src/main/java/com/sales/management/product/dto/ProductResponse.java',
-
-    # Product test files (updated with correct ProductService.list() signature)
     'src/test/java/com/sales/management/product/ProductCachingIntegrationTest.java',
     'src/test/java/com/sales/management/product/ProductServiceUnitTest.java',
-
-    # Order service (uses product.getVatRate())
     'src/main/java/com/sales/management/order/SalesOrderService.java',
     'src/test/java/com/sales/management/order/SalesOrderIntegrationTest.java',
-
-    # Frontend lib types/api (used by all pages)
     'frontend/src/lib/types.ts',
     'frontend/src/lib/api.ts',
-
-    # UI pages with UI/UX fixes
     'frontend/src/pages/ProductsPage.tsx',
     'frontend/src/pages/OrdersPage.tsx',
     'frontend/src/pages/FinancePage.tsx',
@@ -45,6 +31,80 @@ CHANGED_FILES = [
     'frontend/src/pages/ReturnsPage.tsx',
     'frontend/src/pages/UsersPage.tsx',
 ]
+
+IGNORED_PATH_PREFIXES = (
+    '.git/',
+    'target/',
+    'node_modules/',
+    'scripts/out/',
+)
+
+ALLOWED_PATH_PREFIXES = (
+    'src/',
+    'frontend/',
+)
+
+ALLOWED_EXACT_FILES = {
+    'pom.xml',
+    'Dockerfile',
+    'docker-compose.yml',
+}
+
+
+def collect_git_file_list(args):
+    cmd = ['git', '-C', LOCAL_BASE, *args]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        return []
+    return [line.strip().replace('\\', '/') for line in result.stdout.splitlines() if line.strip()]
+
+
+def is_deployable_file(rel_path):
+    normalized = rel_path.replace('\\', '/').strip()
+    if not normalized:
+        return False
+    if any(normalized.startswith(prefix) for prefix in IGNORED_PATH_PREFIXES):
+        return False
+    if normalized.endswith('.pyc'):
+        return False
+    if normalized in ALLOWED_EXACT_FILES:
+        return True
+    return any(normalized.startswith(prefix) for prefix in ALLOWED_PATH_PREFIXES)
+
+
+def resolve_changed_files():
+    combined = []
+    seen = set()
+
+    for args in (
+        ['diff', '--name-only', '--cached'],
+        ['diff', '--name-only'],
+        ['ls-files', '--others', '--exclude-standard'],
+        ['show', '--name-only', '--pretty=format:', 'HEAD'],
+    ):
+        for rel_path in collect_git_file_list(args):
+            if rel_path in seen:
+                continue
+            seen.add(rel_path)
+            combined.append(rel_path)
+
+    deployable = []
+    for rel_path in combined:
+        if not is_deployable_file(rel_path):
+            continue
+        local_path = os.path.join(LOCAL_BASE, rel_path.replace('/', os.sep))
+        if os.path.isfile(local_path):
+            deployable.append(rel_path)
+
+    if deployable:
+        return deployable
+
+    fallback = []
+    for rel_path in DEFAULT_DEPLOY_FILES:
+        local_path = os.path.join(LOCAL_BASE, rel_path.replace('/', os.sep))
+        if os.path.isfile(local_path):
+            fallback.append(rel_path)
+    return fallback
 
 def run(client, cmd, timeout=60):
     print(f'  $ {cmd}')
@@ -56,6 +116,12 @@ def run(client, cmd, timeout=60):
     rc = stdout.channel.recv_exit_status()
     print(f'  [exit {rc}]')
     return rc
+
+CHANGED_FILES = resolve_changed_files()
+print(f'Prepared {len(CHANGED_FILES)} file(s) for upload')
+if not CHANGED_FILES:
+    print('No deployable files detected from git diff; aborting deploy to avoid empty rollout')
+    sys.exit(1)
 
 client = paramiko.SSHClient()
 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -97,11 +163,14 @@ print('\n--- STEP 5: Backend health ping (wait up to 60s for Spring Boot) ---')
 run(
     client,
     "for i in $(seq 1 12); do "
-    "  curl -sf 'http://localhost:8080/api/v1/products?page=0&size=1' -o /dev/null 2>/dev/null "
-    "  && echo BACKEND_OK && break; "
-    "  echo \"Waiting for backend... attempt $i/12\"; "
+    "  code=$(curl -s -o /dev/null -w '%{http_code}' 'http://localhost:8080/api/v1/products?page=0&size=1' || true); "
+    "  if [ \"$code\" = \"200\" ] || [ \"$code\" = \"401\" ] || [ \"$code\" = \"403\" ]; then "
+    "    echo BACKEND_OK_HTTP_$code; "
+    "    break; "
+    "  fi; "
+    "  echo \"Waiting for backend... attempt $i/12 (http=$code)\"; "
     "  sleep 5; "
-    "done || echo BACKEND_FAIL",
+    "done",
     75,
 )
 
