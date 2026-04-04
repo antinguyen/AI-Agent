@@ -250,6 +250,17 @@ def resolve_changed_files(force_mode=False, base_ref=None):
             fallback.append(rel_path)
     return fallback, 'DEFAULT_BOOTSTRAP', combined, skipped
 
+
+def build_mode_summary(selection_mode, force_deploy, base_ref, dry_run, no_build, print_json_only):
+    parts = [f'selection={selection_mode}']
+    if base_ref:
+        parts.append(f'baseRef={base_ref}')
+    parts.append(f'force={"on" if force_deploy else "off"}')
+    parts.append(f'dryRun={"on" if dry_run else "off"}')
+    parts.append(f'noBuild={"on" if no_build else "off"}')
+    parts.append(f'jsonOnly={"on" if print_json_only else "off"}')
+    return ', '.join(parts)
+
 def run(client, cmd, timeout=60):
     print(f'  $ {cmd}')
     _, stdout, stderr = client.exec_command(cmd, timeout=timeout)
@@ -264,6 +275,15 @@ def run(client, cmd, timeout=60):
 CHANGED_FILES, selection_mode, all_candidates, skipped_files = resolve_changed_files(FORCE_DEPLOY, BASE_REF)
 payload_context = {
         'selectionMode': selection_mode,
+    'modeSummary': build_mode_summary(selection_mode, FORCE_DEPLOY, BASE_REF, DRY_RUN, NO_BUILD, PRINT_JSON_ONLY),
+    'options': {
+        'force': FORCE_DEPLOY,
+        'dryRun': DRY_RUN,
+        'noBuild': NO_BUILD,
+        'printJson': PRINT_JSON,
+        'printJsonOnly': PRINT_JSON_ONLY,
+        'verbose': VERBOSE,
+    },
         'baseRef': BASE_REF,
         'forceDeploy': FORCE_DEPLOY,
         'dryRun': DRY_RUN,
