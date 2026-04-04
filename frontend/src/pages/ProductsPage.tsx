@@ -400,6 +400,48 @@ export default function ProductsPage() {
     placeholderData: keepPreviousData,
   })
 
+  useEffect(() => {
+    if (!data?.hasNext) return
+    void qc.prefetchQuery({
+      queryKey: [
+        'products', page + 1, debouncedKeyword, supplierFilter, brandFilter, originFilter, categoryFilter, currencyFilter,
+        debouncedPriceFromFilter, debouncedPriceToFilter, debouncedYearFromFilter, debouncedYearToFilter,
+      ],
+      queryFn: () =>
+        api.get('/products', {
+          params: {
+            page: page + 1,
+            size: 15,
+            name: debouncedKeyword || undefined,
+            sku: debouncedKeyword || undefined,
+            supplier: supplierFilter || undefined,
+            brand: brandFilter || undefined,
+            originCountry: originFilter || undefined,
+            category: categoryFilter || undefined,
+            currencyCode: currencyFilter === 'ALL' ? undefined : currencyFilter,
+            priceFrom: parseNumberFilter(debouncedPriceFromFilter),
+            priceTo: parseNumberFilter(debouncedPriceToFilter),
+            yearFrom: parseNumberFilter(debouncedYearFromFilter),
+            yearTo: parseNumberFilter(debouncedYearToFilter),
+          },
+        }).then((r) => r.data),
+    })
+  }, [
+    data?.hasNext,
+    page,
+    debouncedKeyword,
+    supplierFilter,
+    brandFilter,
+    originFilter,
+    categoryFilter,
+    currencyFilter,
+    debouncedPriceFromFilter,
+    debouncedPriceToFilter,
+    debouncedYearFromFilter,
+    debouncedYearToFilter,
+    qc,
+  ])
+
   const { data: productOptions } = useQuery<ProductOptions>({
     queryKey: ['product-options'],
     queryFn: () => api.get('/products/options').then((r) => r.data),

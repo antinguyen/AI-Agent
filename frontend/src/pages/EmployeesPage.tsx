@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Search, Users, ShieldCheck, UserCheck } from 'lucide-react'
@@ -46,6 +46,33 @@ export default function EmployeesPage() {
     }).then((r) => r.data),
     placeholderData: keepPreviousData,
   })
+
+  useEffect(() => {
+    if (!data?.hasNext) return
+    void qc.prefetchQuery({
+      queryKey: ['employees', page + 1, debouncedUsernameFilter, debouncedFirstNameFilter, debouncedDepartmentFilter, roleFilter, activeFilter],
+      queryFn: () => api.get('/employees', {
+        params: {
+          page: page + 1,
+          size: 12,
+          username: debouncedUsernameFilter || undefined,
+          firstName: debouncedFirstNameFilter || undefined,
+          department: debouncedDepartmentFilter || undefined,
+          role: roleFilter === 'ALL' ? undefined : roleFilter,
+          active: activeFilter === 'ALL' ? undefined : activeFilter,
+        },
+      }).then((r) => r.data),
+    })
+  }, [
+    data?.hasNext,
+    page,
+    debouncedUsernameFilter,
+    debouncedFirstNameFilter,
+    debouncedDepartmentFilter,
+    roleFilter,
+    activeFilter,
+    qc,
+  ])
 
   // Fetch statistics
   const { data: statsData } = useQuery({

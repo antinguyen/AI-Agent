@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Search, Users } from 'lucide-react'
@@ -47,6 +47,22 @@ export default function UsersPage() {
     }).then((r) => r.data),
     placeholderData: keepPreviousData,
   })
+
+  useEffect(() => {
+    if (!data?.hasNext) return
+    void qc.prefetchQuery({
+      queryKey: ['users', page + 1, debouncedUsernameFilter, roleFilter, activeFilter],
+      queryFn: () => api.get('/users', {
+        params: {
+          page: page + 1,
+          size: 12,
+          username: debouncedUsernameFilter || undefined,
+          role: roleFilter === 'ALL' ? undefined : roleFilter,
+          active: activeFilter === 'ALL' ? undefined : activeFilter,
+        },
+      }).then((r) => r.data),
+    })
+  }, [data?.hasNext, page, debouncedUsernameFilter, roleFilter, activeFilter, qc])
 
   const users = data?.content ?? []
 

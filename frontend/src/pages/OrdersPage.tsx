@@ -589,6 +589,24 @@ export default function OrdersPage() {
       }).then((r) => r.data),
       placeholderData: keepPreviousData,
   })
+
+  useEffect(() => {
+    if (!data?.hasNext) return
+    void qc.prefetchQuery({
+      queryKey: ['orders', page + 1, statusFilter, fulfillmentFilter, fromDate, toDate, preference.tablePageSize],
+      queryFn: () =>
+        api.get('/orders', {
+          params: {
+            page: page + 1,
+            size: preference.tablePageSize,
+            status: statusFilter || undefined,
+            fulfillmentStatus: fulfillmentFilter === 'ALL' ? undefined : fulfillmentFilter,
+            from: fromDate || undefined,
+            to: toDate || undefined,
+          },
+        }).then((r) => r.data),
+    })
+  }, [data?.hasNext, page, statusFilter, fulfillmentFilter, fromDate, toDate, preference.tablePageSize, qc])
   const { data: shipments = [] } = useQuery<Shipment[]>({
     queryKey: ['orders-shipments'],
     queryFn: () => api.get('/shipments').then((r) => r.data),
