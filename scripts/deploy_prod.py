@@ -13,6 +13,7 @@ RUN_ID = str(uuid.uuid4())
 STARTED_AT_UTC = datetime.now(timezone.utc)
 START_TICK = time.perf_counter()
 STEP_METRICS = []
+WARNINGS = []
 
 HOST = '192.168.1.200'
 USER = 'saleadmin'
@@ -68,6 +69,7 @@ FORCE_DEPLOY = '--force' in sys.argv
 DRY_RUN = '--dry-run' in sys.argv
 VERBOSE = '--verbose' in sys.argv
 NO_BUILD = '--no-build' in sys.argv
+SOFT_HEALTH = '--soft-health' in sys.argv
 PRINT_JSON = '--print-json' in sys.argv
 PRINT_JSON_ONLY = '--print-json-only' in sys.argv
 HELP = '--help' in sys.argv or '-h' in sys.argv
@@ -143,6 +145,7 @@ def print_usage():
     print('  --force               Deploy using DEFAULT_DEPLOY_FILES list')
     print('  --base-ref <ref>      Deploy files changed from <ref>...HEAD')
     print('  --no-build            Skip docker compose build step')
+    print('  --soft-health         Do not fail deploy on backend/frontend health check errors')
     print('  --print-json          Print machine-readable JSON summary')
     print('  --print-json-only     Print JSON only (no text logs, implies --dry-run)')
     print('  --verbose             Print skipped-file reasons')
@@ -168,7 +171,7 @@ BASE_REF = parse_option_value('--base-ref')
 
 def validate_args():
     known_switches = {
-        '--help', '-h', '--force', '--dry-run', '--verbose', '--no-build', '--print-json', '--print-json-only', '--base-ref',
+        '--help', '-h', '--force', '--dry-run', '--verbose', '--no-build', '--soft-health', '--print-json', '--print-json-only', '--base-ref',
     }
     skip_next = False
     for index, arg in enumerate(sys.argv[1:], start=1):
@@ -301,6 +304,7 @@ def build_mode_summary(selection_mode, force_deploy, base_ref, dry_run, no_build
     parts.append(f'force={"on" if force_deploy else "off"}')
     parts.append(f'dryRun={"on" if dry_run else "off"}')
     parts.append(f'noBuild={"on" if no_build else "off"}')
+    parts.append(f'softHealth={"on" if SOFT_HEALTH else "off"}')
     parts.append(f'jsonOnly={"on" if print_json_only else "off"}')
     return ', '.join(parts)
 
@@ -325,6 +329,7 @@ payload_context = {
         'force': FORCE_DEPLOY,
         'dryRun': DRY_RUN,
         'noBuild': NO_BUILD,
+        'softHealth': SOFT_HEALTH,
         'printJson': PRINT_JSON,
         'printJsonOnly': PRINT_JSON_ONLY,
         'verbose': VERBOSE,
@@ -339,6 +344,7 @@ payload_context = {
         'candidateCount': len(all_candidates),
         'isNoOp': len(CHANGED_FILES) == 0,
         'steps': STEP_METRICS,
+        'warnings': WARNINGS,
 }
 if VERBOSE:
     payload_context['skippedFiles'] = [
@@ -454,16 +460,26 @@ backend_health_rc = run(
 )
 end_step(backend_health_step, status='success' if backend_health_rc == 0 else 'error', detail={'exitCode': backend_health_rc})
 if backend_health_rc != 0:
-    client.close()
-    exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message='Backend health check failed', error_code='backend_health_failed', data=payload_context)
+    warning = 'Backend health check failed'
+    WARNINGS.append(warning)
+    if SOFT_HEALTH:
+        print(f'[WARN] {warning} (soft-health enabled, continuing)')
+    else:
+        client.close()
+        exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message=warning, error_code='backend_health_failed', data=payload_context)
 
 print('\n--- STEP 6: Frontend health ping ---')
 frontend_health_step = begin_step('frontend_health_ping')
 frontend_health_rc = run(client, "curl -sf http://localhost/ -o /dev/null && echo FRONTEND_OK && exit 0; echo FRONTEND_FAIL; exit 1", 10)
 end_step(frontend_health_step, status='success' if frontend_health_rc == 0 else 'error', detail={'exitCode': frontend_health_rc})
 if frontend_health_rc != 0:
-    client.close()
-    exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message='Frontend health check failed', error_code='frontend_health_failed', data=payload_context)
+    warning = 'Frontend health check failed'
+    WARNINGS.append(warning)
+    if SOFT_HEALTH:
+        print(f'[WARN] {warning} (soft-health enabled, continuing)')
+    else:
+        client.close()
+        exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message=warning, error_code='frontend_health_failed', data=payload_context)
 
 client.close()
 print('\nDEPLOY_RESULT=DONE')
