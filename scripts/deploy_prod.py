@@ -474,7 +474,7 @@ if container_status_rc != 0:
     client.close()
     exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message='docker ps status check failed', error_code='container_status_failed', data=payload_context)
 
-print('\n--- STEP 5: Backend health ping (wait up to 60s for Spring Boot) ---')
+print(f'\n--- STEP 5: Backend health ping (wait up to {HEALTH_TIMEOUT_SEC}s for Spring Boot) ---')
 backend_health_step = begin_step('backend_health_ping')
 backend_health_rc = run(
     client,
