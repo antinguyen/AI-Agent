@@ -1,6 +1,7 @@
 import paramiko, sys, os, subprocess, json
 from datetime import datetime, timezone
 import uuid
+import time
 
 EXIT_SUCCESS = 0
 EXIT_GENERAL_ERROR = 1
@@ -9,6 +10,8 @@ EXIT_BUILD_FAILED = 3
 EXIT_DEPLOY_FAILED = 4
 JSON_SCHEMA_VERSION = '1.0.0'
 RUN_ID = str(uuid.uuid4())
+STARTED_AT_UTC = datetime.now(timezone.utc)
+START_TICK = time.perf_counter()
 
 HOST = '192.168.1.200'
 USER = 'saleadmin'
@@ -73,12 +76,21 @@ def utc_now_iso():
     return datetime.now(timezone.utc).isoformat()
 
 
+def elapsed_ms():
+    return int((time.perf_counter() - START_TICK) * 1000)
+
+
 def exit_with_payload(exit_code, status='success', message=None, error_code=None, data=None):
+    ended_at = datetime.now(timezone.utc)
+    duration = elapsed_ms()
     if PRINT_JSON or PRINT_JSON_ONLY:
         payload = {
             'schemaVersion': JSON_SCHEMA_VERSION,
             'runId': RUN_ID,
-            'timestampUtc': utc_now_iso(),
+            'timestampUtc': ended_at.isoformat(),
+            'startedAtUtc': STARTED_AT_UTC.isoformat(),
+            'endedAtUtc': ended_at.isoformat(),
+            'durationMs': duration,
             'exitCode': exit_code,
             'status': status,
         }
@@ -92,6 +104,10 @@ def exit_with_payload(exit_code, status='success', message=None, error_code=None
                 'message': message or 'Unknown error',
             }
         print(json.dumps(payload, ensure_ascii=False))
+    elif status == 'success':
+        print(f'Duration: {duration} ms')
+    else:
+        print(f'Duration before error: {duration} ms')
     sys.exit(exit_code)
 
 
