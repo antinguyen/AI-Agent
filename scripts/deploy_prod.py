@@ -1,4 +1,5 @@
 import paramiko, sys, os, subprocess, json
+from datetime import datetime, timezone
 
 EXIT_SUCCESS = 0
 EXIT_GENERAL_ERROR = 1
@@ -243,6 +244,8 @@ def run(client, cmd, timeout=60):
 CHANGED_FILES, selection_mode, all_candidates, skipped_files = resolve_changed_files(FORCE_DEPLOY, BASE_REF)
 if PRINT_JSON:
     payload = {
+        'timestampUtc': datetime.now(timezone.utc).isoformat(),
+        'exitCode': EXIT_SUCCESS,
         'selectionMode': selection_mode,
         'baseRef': BASE_REF,
         'forceDeploy': FORCE_DEPLOY,
