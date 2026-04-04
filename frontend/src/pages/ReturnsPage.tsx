@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { RotateCcw, Receipt, ClipboardCheck } from 'lucide-react'
 import api from '../lib/api'
 import type { Order, PageResponse, SalesReturn } from '../lib/types'
 import PageHero from '../components/ui/PageHero'
@@ -49,6 +50,7 @@ export default function ReturnsPage() {
 
   const pageError = (ordersError || detailError || returnsError) as { response?: { data?: { message?: string } } } | undefined
   const pageErrorMessage = pageError?.response?.data?.message ?? 'Không thể tải dữ liệu trả hàng.'
+  const totalRefund = returns.reduce((sum, item) => sum + item.totalRefund, 0)
 
   const createReturnMutation = useMutation({
     mutationFn: () => {
@@ -81,9 +83,36 @@ export default function ReturnsPage() {
         eyebrow="Returns"
         title="Trả hàng"
         description="Tạo phiếu trả cho đơn đã thanh toán, hoàn tồn kho và theo dõi tổng tiền hoàn."
+        aside={(
+          <div className="grid grid-cols-2 gap-3 text-sm md:w-[340px]">
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Đơn có thể trả</p>
+              <p className="mt-1 font-semibold text-gray-900">{paidOrders.length}</p>
+            </div>
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Phiếu trả</p>
+              <p className="mt-1 font-semibold text-gray-900">{returns.length}</p>
+            </div>
+          </div>
+        )}
       />
 
-      <section className="panel-soft rounded-3xl p-5 space-y-4">
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><RotateCcw size={14} /> Chờ xử lý</p>
+          <p className="mt-2 text-2xl font-bold text-amber-700">{returns.filter((item) => item.status === 'PENDING').length}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><ClipboardCheck size={14} /> Hoàn tất</p>
+          <p className="mt-2 text-2xl font-bold text-emerald-700">{returns.filter((item) => item.status === 'COMPLETED').length}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><Receipt size={14} /> Tổng hoàn tiền</p>
+          <p className="mt-2 text-2xl font-bold text-sky-700">{fmt(totalRefund)}</p>
+        </div>
+      </section>
+
+      <section className="panel-soft sticky top-4 z-10 rounded-3xl p-5 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Tạo phiếu trả hàng</h3>
         {ordersLoading && <p className="text-sm text-gray-500">Đang tải danh sách đơn hàng...</p>}
         {(ordersError || detailError || returnsError) && <p className="text-sm text-rose-600">{pageErrorMessage}</p>}

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Landmark } from 'lucide-react'
+import { Landmark, History, ArrowUpDown } from 'lucide-react'
 import api from '../lib/api'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirmDialog } from '../components/ui/ConfirmDialogProvider'
@@ -104,6 +104,8 @@ export default function CurrencySettingsPage() {
     resetDefaultsMutation.mutate()
   }
 
+  const editedCount = Object.keys(edits).length
+
   return (
     <div className="space-y-5">
       <PageHero
@@ -111,9 +113,36 @@ export default function CurrencySettingsPage() {
         title="Cài đặt tỷ giá ngân hàng"
         description="Thiết lập tỷ giá chuẩn theo từng loại tiền. Sản phẩm sẽ tự động lấy tỷ giá mặc định theo loại tiền đã chọn."
         icon={<div className="mt-1 rounded-2xl bg-amber-100 p-3 text-amber-700"><Landmark size={22} /></div>}
+        aside={(
+          <div className="grid grid-cols-2 gap-3 text-sm md:w-[340px]">
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Cặp tiền tệ</p>
+              <p className="mt-1 font-semibold text-gray-900">{rows.length}</p>
+            </div>
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Thay đổi tạm</p>
+              <p className="mt-1 font-semibold text-gray-900">{editedCount}</p>
+            </div>
+          </div>
+        )}
       />
 
-      <section className="panel-soft rounded-3xl p-5 space-y-4">
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><ArrowUpDown size={14} /> Tỷ giá cấu hình</p>
+          <p className="mt-2 text-2xl font-bold text-teal-700">{rows.length}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><History size={14} /> Log thay đổi</p>
+          <p className="mt-2 text-2xl font-bold text-indigo-700">{auditData?.content.length ?? 0}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><Landmark size={14} /> Trạng thái</p>
+          <p className="mt-2 text-sm font-semibold text-gray-900">{hasInvalid ? 'Có dữ liệu chưa hợp lệ' : 'Sẵn sàng lưu'}</p>
+        </div>
+      </section>
+
+      <section className="panel-soft sticky top-4 z-10 rounded-3xl p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-gray-900">Danh sách tỷ giá</h3>
           <div className="flex items-center gap-2">

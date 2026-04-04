@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Search, Users } from 'lucide-react'
+import { Search, Users, ShieldCheck, UserCheck } from 'lucide-react'
 import api from '../lib/api'
 import { useConfirmDialog } from '../components/ui/ConfirmDialogProvider'
 import { useToast } from '../components/ui/ToastProvider'
@@ -167,7 +167,34 @@ export default function EmployeesPage() {
         title="Quản lý nhân viên"
         description="Quản lý thông tin nhân viên, phân công, cập nhật lương và phân quyền."
         icon={<div className="mt-1 rounded-2xl bg-purple-100 p-3 text-purple-700"><Users size={22} /></div>}
+        aside={(
+          <div className="grid grid-cols-2 gap-3 text-sm md:w-[340px]">
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Tổng nhân sự</p>
+              <p className="mt-1 font-semibold text-gray-900">{counts.total}</p>
+            </div>
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Đang hoạt động</p>
+              <p className="mt-1 font-semibold text-gray-900">{counts.active}</p>
+            </div>
+          </div>
+        )}
       />
+
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><Users size={14} /> Tổng nhân viên</p>
+          <p className="mt-2 text-2xl font-bold text-indigo-700">{counts.total}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><UserCheck size={14} /> Hoạt động</p>
+          <p className="mt-2 text-2xl font-bold text-emerald-700">{counts.active}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><ShieldCheck size={14} /> ADMIN/HR</p>
+          <p className="mt-2 text-2xl font-bold text-violet-700">{counts.admins}</p>
+        </div>
+      </section>
 
       <section className="panel-soft rounded-3xl p-5 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Thêm nhân viên mới</h3>
@@ -304,7 +331,7 @@ export default function EmployeesPage() {
         </div>
       </section>
 
-      <section className="panel-soft rounded-3xl p-5 space-y-3">
+      <section className="panel-soft sticky top-4 z-10 rounded-3xl p-5 space-y-3">
         <h3 className="text-lg font-semibold text-gray-900">Bộ lọc danh sách</h3>
         <div className="grid gap-3 md:grid-cols-5">
           <div className="relative">
