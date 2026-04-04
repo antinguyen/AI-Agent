@@ -252,11 +252,11 @@ export default function UsersPage() {
       <div className="space-y-3 md:hidden">
         {isLoading && Array.from({ length: 4 }).map((_, index) => (
           <div key={index} className="panel-soft rounded-3xl p-4">
-            <div className="h-24 rounded-2xl bg-stone-100/80 animate-pulse" />
+            <div className="crm-skeleton-block h-24 rounded-2xl" />
           </div>
         ))}
         {!isLoading && data?.content.length === 0 && (
-          <div className="panel-soft rounded-3xl p-8 text-center text-sm text-gray-500">Không có người dùng</div>
+          <div className="panel-soft rounded-3xl p-8"><div className="crm-empty-card text-sm">Không có người dùng</div></div>
         )}
         {data?.content.map((user) => (
           <div key={user.id} className="panel-soft rounded-3xl p-4 space-y-4">
@@ -314,7 +314,7 @@ export default function UsersPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {isLoading && Array.from({ length: 5 }).map((_, index) => (
-              <tr key={index}><td colSpan={6} className="px-4 py-4"><div className="h-10 rounded-xl bg-stone-100/80 animate-pulse" /></td></tr>
+              <tr key={index}><td colSpan={6} className="px-4 py-4"><div className="crm-skeleton-block h-10 rounded-xl" /></td></tr>
             ))}
             {data?.content.map((u) => (
               <tr key={u.id} className="hover:bg-stone-50/70 transition-colors">
@@ -355,7 +355,7 @@ export default function UsersPage() {
               </tr>
             ))}
             {!isLoading && data?.content.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-14 text-gray-400">Không có người dùng</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8"><div className="crm-empty-card text-sm">Không có người dùng</div></td></tr>
             )}
           </tbody>
         </table>
