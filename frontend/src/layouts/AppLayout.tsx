@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ComponentType } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Package, Users, ShoppingCart,
-  UserCircle, LogOut, AlertTriangle, Wallet, RotateCcw, FileBarChart2, Warehouse, Truck, Landmark, ArrowRight, Settings2, Search, X,
+  UserCircle, LogOut, AlertTriangle, Wallet, RotateCcw, FileBarChart2, Warehouse, Truck, Landmark, ArrowRight, Settings2, Search, X, Sparkles, Plus, CalendarDays,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../lib/api'
@@ -47,6 +47,7 @@ const adminNavItems: NavItem[] = [
 export default function AppLayout() {
   const { user, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [isPaletteOpen, setIsPaletteOpen] = useState(false)
   const [query, setQuery] = useState('')
 
@@ -74,6 +75,20 @@ export default function AppLayout() {
     const normalized = query.trim().toLowerCase()
     return commandItems.filter((item) => item.label.toLowerCase().includes(normalized))
   }, [commandItems, query])
+
+  const currentModule = useMemo(() => {
+    return commandItems.find((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`))
+  }, [commandItems, location.pathname])
+
+  const quickActions = useMemo(() => {
+    const candidates = [
+      { label: 'Tạo đơn mới', to: '/orders', show: true },
+      { label: 'Thêm sản phẩm', to: '/products', show: true },
+      { label: 'Xem báo cáo', to: '/reports', show: isAdmin },
+      { label: 'Hàng sắp hết', to: '/products/low-stock', show: isAdmin },
+    ]
+    return candidates.filter((item) => item.show)
+  }, [isAdmin])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -118,7 +133,8 @@ export default function AppLayout() {
           }
         >
           <Icon size={18} className="shrink-0" />
-          <span>{label}</span>
+          <span className="flex-1">{label}</span>
+          <ArrowRight size={14} className="opacity-0 transition group-hover:opacity-70" />
         </NavLink>
       ))}
     </div>
@@ -127,7 +143,7 @@ export default function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-transparent md:flex-row">
       {/* Sidebar */}
-      <aside className="mx-3 mt-3 flex flex-col overflow-hidden rounded-2xl surface-float md:sticky md:top-3 md:mb-3 md:mr-0 md:h-[calc(100vh-1.5rem)] md:w-72">
+      <aside className="mx-3 mt-3 flex flex-col overflow-hidden rounded-2xl surface-float sidebar-glow md:sticky md:top-3 md:mb-3 md:mr-0 md:h-[calc(100vh-1.5rem)] md:w-72">
         <div className="px-6 py-5 border-b border-white/60 bg-gradient-to-r from-teal-700 to-teal-600 text-white">
           <h1 className="text-lg font-bold tracking-tight">Sales Manager</h1>
           <p className="text-xs text-teal-100 mt-1">{user?.username} · {user?.role?.replace('ROLE_', '')}</p>
@@ -192,6 +208,49 @@ export default function AppLayout() {
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <header className="surface-float mb-6 rounded-3xl p-4 md:p-5 enter-up">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="crm-pill inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-teal-800">
+                <Sparkles size={12} />
+                CRM Workspace
+              </p>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
+                {currentModule?.label ?? 'Sales Manager'}
+              </h1>
+              <p className="mt-1 text-sm text-gray-600">
+                {isAdmin ? 'Quản trị toàn bộ vận hành bán hàng.' : 'Theo dõi và xử lý công việc hàng ngày.'}
+              </p>
+            </div>
+
+            <div className="flex flex-col items-start gap-3 md:items-end">
+              <p className="inline-flex items-center gap-2 text-xs font-semibold text-gray-500">
+                <CalendarDays size={14} />
+                {new Intl.DateTimeFormat('vi-VN', { dateStyle: 'full' }).format(new Date())}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {quickActions.slice(0, 2).map((action) => (
+                  <button
+                    key={action.to}
+                    onClick={() => navigate(action.to)}
+                    className="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-teal-800"
+                  >
+                    <Plus size={14} />
+                    {action.label}
+                  </button>
+                ))}
+                <button
+                  onClick={openCommandPalette}
+                  className="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-stone-50"
+                >
+                  <Search size={14} />
+                  Tìm nhanh
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
         <Outlet />
       </main>
 
