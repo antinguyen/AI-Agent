@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { ComponentType } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, CheckCircle, XCircle, Eye, Download } from 'lucide-react'
+import { Plus, CheckCircle, XCircle, Eye, Download, Layers3, ListFilter, Clock3, Truck, BadgeCheck } from 'lucide-react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import api from '../lib/api'
 import type { Order, OrderCreateRequest, PageResponse, OrderStatus, Customer, Product, Shipment, Warehouse, FulfillmentStatus } from '../lib/types'
@@ -79,6 +80,15 @@ const ORDER_PRESETS: Array<{
   { key: 'RETURNED', label: 'Trả hàng', status: 'RETURNED', fulfillment: 'ALL' },
   { key: 'CANCELLED', label: 'Đã huỷ', status: 'CANCELLED', fulfillment: 'ALL' },
 ]
+
+const ORDER_VIEW_META: Record<Exclude<OrderPresetKey, 'CUSTOM'>, { hint: string; tone: string; icon: ComponentType<{ size?: number; className?: string }> }> = {
+  ALL: { hint: 'Toàn bộ đơn hàng', tone: 'text-stone-700', icon: Layers3 },
+  PENDING_CONFIRMATION: { hint: 'Cần xác nhận ngay', tone: 'text-amber-700', icon: Clock3 },
+  READY_TO_SHIP: { hint: 'Ưu tiên bàn giao', tone: 'text-orange-700', icon: Truck },
+  PAID: { hint: 'Đã hoàn tất thanh toán', tone: 'text-emerald-700', icon: BadgeCheck },
+  RETURNED: { hint: 'Đơn đã hoàn trả', tone: 'text-sky-700', icon: ListFilter },
+  CANCELLED: { hint: 'Đơn đã huỷ', tone: 'text-rose-700', icon: ListFilter },
+}
 
 function resolvePresetKey(
   status: OrderStatus | '',
@@ -705,6 +715,13 @@ export default function OrdersPage() {
 
   const statuses: Array<OrderStatus | ''> = ['', 'CREATED', 'CONFIRMED', 'PAID', 'CANCELLED', 'RETURNED']
   const activePresetKey = resolvePresetKey(statusFilter, fulfillmentFilter)
+  const activePreset = activePresetKey === 'CUSTOM'
+    ? null
+    : ORDER_PRESETS.find((preset) => preset.key === activePresetKey) ?? null
+  const activePresetMeta = activePreset ? ORDER_VIEW_META[activePreset.key] : null
+  const selectionRatio = selectedOrderIds.length > 0 && (data?.totalElements ?? 0) > 0
+    ? Math.min(100, Math.round((selectedOrderIds.length / (data?.totalElements ?? 1)) * 100))
+    : 0
 
   const exportOrders = async () => {
     const hasSelection = selectedOrderIds.length > 0
@@ -920,59 +937,196 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-5">
-      <PageHero eyebrow="Fulfillment" title="Đơn hàng" description="Theo dõi vòng đời đơn hàng từ tạo mới đến thanh toán, huỷ hoặc hoàn trả." />
+      <PageHero
+        eyebrow="Fulfillment"
+        title="Đơn hàng"
+        description="Work queue theo chuẩn CRM: chọn view, lọc nhanh và xử lý hàng loạt theo ngữ cảnh."
+        aside={(
+          <div className="grid grid-cols-2 gap-3 text-sm md:w-[320px]">
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Tổng đơn theo lọc</p>
+              <p className="mt-1 font-semibold text-gray-900">{data?.totalElements ?? '—'}</p>
+            </div>
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Đang chọn</p>
+              <p className="mt-1 font-semibold text-gray-900">{selectedOrderIds.length}</p>
+            </div>
+          </div>
+        )}
+      />
 
       <section className="panel-soft rounded-3xl p-4 md:p-5 space-y-3">
-        <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">Bộ lọc nhanh</h3>
-            <p className="text-xs text-gray-500">Hệ thống sẽ ghi nhớ bộ lọc đơn hàng gần nhất theo tài khoản của bạn.</p>
+            <h3 className="text-sm font-semibold text-gray-900">Saved views</h3>
+            <p className="text-xs text-gray-500">Lưu theo tài khoản để mở lại nhanh khi vận hành hàng ngày.</p>
           </div>
-          {activePresetKey === 'CUSTOM' && (
-            <span className="text-xs font-medium text-amber-700">Đang dùng bộ lọc tuỳ chỉnh</span>
+          {activePresetMeta ? (
+            <p className={`text-xs font-semibold ${activePresetMeta.tone}`}>
+              {activePresetMeta.hint}
+            </p>
+          ) : (
+            <p className="text-xs font-semibold text-amber-700">Đang dùng bộ lọc tuỳ chỉnh</p>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {ORDER_PRESETS.map((preset) => (
-            <button
-              key={preset.key}
-              type="button"
-              onClick={() => applyFilters(preset.status, preset.fulfillment)}
-              className={`rounded-full border px-3 py-2 text-xs font-semibold transition ${activePresetKey === preset.key ? 'border-teal-700 bg-teal-700 text-white shadow-sm' : 'border-stone-300 bg-white text-gray-600 hover:border-teal-300 hover:text-teal-700'}`}
-            >
-              {preset.label}
-            </button>
-          ))}
+        <div className="grid gap-2 md:grid-cols-3 xl:grid-cols-6">
+          {ORDER_PRESETS.map((preset) => {
+            const meta = ORDER_VIEW_META[preset.key]
+            const Icon = meta.icon
+            const isActive = activePresetKey === preset.key
+            return (
+              <button
+                key={preset.key}
+                type="button"
+                onClick={() => applyFilters(preset.status, preset.fulfillment)}
+                className={`rounded-2xl border px-3 py-3 text-left transition ${isActive ? 'border-teal-700 bg-teal-700 text-white shadow-sm' : 'border-stone-300 bg-white text-gray-700 hover:border-teal-300 hover:bg-teal-50/40'}`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-xs font-bold uppercase tracking-[0.15em]">{preset.label}</p>
+                  <Icon size={14} className={isActive ? 'text-teal-100' : meta.tone} />
+                </div>
+                <p className={`mt-1 text-[11px] ${isActive ? 'text-teal-100' : 'text-gray-500'}`}>{meta.hint}</p>
+              </button>
+            )
+          })}
         </div>
       </section>
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-wrap items-center gap-3">
-          <button onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-teal-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-teal-800 w-fit">
-            <Plus size={16} /> Tạo đơn hàng
-          </button>
-          <button
-            type="button"
-            onClick={exportOrders}
-            disabled={exporting}
-            className="flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-teal-300 hover:text-teal-700 disabled:opacity-60"
-          >
-            <Download size={16} /> {exporting ? 'Đang xuất...' : selectedOrderIds.length > 0 ? `Xuất đã chọn (${selectedOrderIds.length})` : 'Xuất Excel'}
-          </button>
-          <button
-            type="button"
-            onClick={() => { void selectAllFilteredOrders() }}
-            disabled={selectingAllFiltered || bulkProcessing || exporting || (data?.totalElements ?? 0) === 0}
-            className="rounded-xl border border-indigo-300 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-60"
-          >
-            {selectingAllFiltered ? 'Đang chọn...' : 'Chọn tất cả theo bộ lọc'}
-          </button>
-          {selectedOrderIds.length > 0 && (
-            <>
-              <span className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-700">
-                Đã chọn {selectedOrderIds.length}/{data?.totalElements ?? selectedOrderIds.length} đơn
-              </span>
+      <section className="sticky top-4 z-20 rounded-3xl border border-white/70 bg-white/85 p-4 shadow-md backdrop-blur md:p-5">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 bg-teal-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-teal-800 w-fit">
+              <Plus size={16} /> Tạo đơn hàng
+            </button>
+            <button
+              type="button"
+              onClick={exportOrders}
+              disabled={exporting}
+              className="flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-teal-300 hover:text-teal-700 disabled:opacity-60"
+            >
+              <Download size={16} /> {exporting ? 'Đang xuất...' : selectedOrderIds.length > 0 ? `Xuất đã chọn (${selectedOrderIds.length})` : 'Xuất Excel'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { void selectAllFilteredOrders() }}
+              disabled={selectingAllFiltered || bulkProcessing || exporting || (data?.totalElements ?? 0) === 0}
+              className="rounded-xl border border-indigo-300 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-60"
+            >
+              {selectingAllFiltered ? 'Đang chọn...' : 'Chọn tất cả theo bộ lọc'}
+            </button>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-[2fr_1fr]">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                <ListFilter size={14} />
+                Trạng thái đơn
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {statuses.map((s) => (
+                  <button key={s} onClick={() => applyFilters(s, fulfillmentFilter)}
+                    className={`px-3 py-2 rounded-xl text-xs font-semibold border transition ${statusFilter === s ? 'bg-teal-700 text-white border-teal-700 shadow-sm' : 'border-stone-300 text-gray-600 hover:bg-white/80'}`}>
+                    {s === '' ? 'Tất cả' : STATUS_LABEL[s]}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                <Layers3 size={14} />
+                Fulfillment
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {(['ALL', 'PENDING', 'READY_TO_SHIP', 'SHIPPED', 'SHIPMENT_CANCELLED', 'CANCELLED'] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => applyFilters(statusFilter, s)}
+                    className={`px-3 py-2 rounded-xl text-xs font-semibold border transition ${fulfillmentFilter === s ? 'bg-slate-700 text-white border-slate-700 shadow-sm' : 'border-stone-300 text-gray-600 hover:bg-white/80'}`}
+                  >
+                    {s === 'ALL' ? 'Tất cả fulfillment' : FULFILLMENT_LABEL[s]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2 rounded-2xl border border-stone-200 bg-stone-50/70 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Khoảng thời gian</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const range = getDatePresetRange('TODAY')
+                    setFromDate(range.from)
+                    setToDate(range.to)
+                    setPage(0)
+                  }}
+                  className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-teal-300 hover:text-teal-700"
+                >
+                  Hôm nay
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const range = getDatePresetRange('LAST_7_DAYS')
+                    setFromDate(range.from)
+                    setToDate(range.to)
+                    setPage(0)
+                  }}
+                  className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-teal-300 hover:text-teal-700"
+                >
+                  7 ngày
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const range = getDatePresetRange('THIS_MONTH')
+                    setFromDate(range.from)
+                    setToDate(range.to)
+                    setPage(0)
+                  }}
+                  className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-teal-300 hover:text-teal-700"
+                >
+                  Tháng này
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => {
+                    setFromDate(e.target.value)
+                    setPage(0)
+                  }}
+                  className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs text-gray-700"
+                />
+                <span className="text-xs text-gray-500">đến</span>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => {
+                    setToDate(e.target.value)
+                    setPage(0)
+                  }}
+                  className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs text-gray-700"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {selectedOrderIds.length > 0 && (
+        <section className="rounded-3xl border border-sky-200 bg-sky-50/80 p-4 md:p-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-sky-800">
+                Workbench hàng loạt: đã chọn {selectedOrderIds.length}/{data?.totalElements ?? selectedOrderIds.length} đơn
+              </p>
+              <div className="mt-2 h-2 rounded-full bg-sky-100">
+                <div className="h-2 rounded-full bg-sky-600" style={{ width: `${selectionRatio}%` }} />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => setSelectedOrderIds([])}
@@ -997,93 +1151,10 @@ export default function OrdersPage() {
               >
                 {bulkProcessing ? 'Đang xử lý...' : `Huỷ (${selectedOrderIds.length})`}
               </button>
-            </>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              const range = getDatePresetRange('TODAY')
-              setFromDate(range.from)
-              setToDate(range.to)
-              setPage(0)
-            }}
-            className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-teal-300 hover:text-teal-700"
-          >
-            Hôm nay
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const range = getDatePresetRange('LAST_7_DAYS')
-              setFromDate(range.from)
-              setToDate(range.to)
-              setPage(0)
-            }}
-            className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-teal-300 hover:text-teal-700"
-          >
-            7 ngày
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const range = getDatePresetRange('THIS_MONTH')
-              setFromDate(range.from)
-              setToDate(range.to)
-              setPage(0)
-            }}
-            className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-teal-300 hover:text-teal-700"
-          >
-            Tháng này
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => {
-              setFromDate(e.target.value)
-              setPage(0)
-            }}
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs text-gray-700"
-          />
-          <span className="text-xs text-gray-500">đến</span>
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => {
-              setToDate(e.target.value)
-              setPage(0)
-            }}
-            className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs text-gray-700"
-          />
-        </div>
-
-      {/* Status filter */}
-        <div className="flex gap-2 flex-wrap">
-          {statuses.map((s) => (
-            <button key={s} onClick={() => applyFilters(s, fulfillmentFilter)}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold border transition ${statusFilter === s ? 'bg-teal-700 text-white border-teal-700 shadow-sm' : 'border-stone-300 text-gray-600 hover:bg-white/80'}`}>
-              {s === '' ? 'Tất cả' : STATUS_LABEL[s]}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex gap-2 flex-wrap">
-          {(['ALL', 'PENDING', 'READY_TO_SHIP', 'SHIPPED', 'SHIPMENT_CANCELLED', 'CANCELLED'] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => applyFilters(statusFilter, s)}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold border transition ${fulfillmentFilter === s ? 'bg-slate-700 text-white border-slate-700 shadow-sm' : 'border-stone-300 text-gray-600 hover:bg-white/80'}`}
-            >
-              {s === 'ALL' ? 'Fulfillment: Tất cả' : FULFILLMENT_LABEL[s]}
-            </button>
-          ))}
-        </div>
-      </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="space-y-3 md:hidden">
         {!data && Array.from({ length: 4 }).map((_, index) => (
