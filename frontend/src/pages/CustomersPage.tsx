@@ -126,11 +126,45 @@ export default function CustomersPage() {
     onError: () => showToast({ tone: 'error', title: 'Không thể xoá khách hàng' }),
   })
 
+  const activeCount = data?.content.filter((customer) => customer.active).length ?? 0
+  const hiddenCount = (data?.content.length ?? 0) - activeCount
+
   return (
     <div className="space-y-5">
-      <PageHero eyebrow="Relationship" title="Khách hàng" description="Tra cứu nhanh, cập nhật hồ sơ và theo dõi trạng thái khách hàng hoạt động." />
+      <PageHero
+        eyebrow="Relationship"
+        title="Khách hàng"
+        description="CRM workspace cho hồ sơ khách hàng, ưu tiên tra cứu nhanh và cập nhật dữ liệu nhất quán."
+        aside={(
+          <div className="grid grid-cols-2 gap-3 text-sm md:w-[320px]">
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Hiển thị trang</p>
+              <p className="mt-1 font-semibold text-gray-900">{data?.content.length ?? '—'}</p>
+            </div>
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Tổng kết quả</p>
+              <p className="mt-1 font-semibold text-gray-900">{data?.totalElements ?? '—'}</p>
+            </div>
+          </div>
+        )}
+      />
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl px-4 py-3">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Khách hoạt động</p>
+          <p className="mt-1 text-2xl font-bold text-emerald-700">{activeCount}</p>
+        </div>
+        <div className="panel-soft rounded-2xl px-4 py-3">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Đang ẩn</p>
+          <p className="mt-1 text-2xl font-bold text-stone-600">{hiddenCount >= 0 ? hiddenCount : '—'}</p>
+        </div>
+        <div className="panel-soft rounded-2xl px-4 py-3">
+          <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Từ khóa tìm kiếm</p>
+          <p className="mt-1 text-sm font-semibold text-gray-900">{search.trim() ? search : 'Chưa áp dụng'}</p>
+        </div>
+      </section>
+
+      <div className="sticky top-4 z-10 flex flex-col gap-3 rounded-3xl border border-white/70 bg-white/85 p-3 backdrop-blur md:flex-row md:items-center md:justify-between">
         <button onClick={() => { setSelected(null); setModalMode('create') }}
           className="flex items-center gap-2 bg-teal-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-teal-800 w-fit">
           <Plus size={16} /> Thêm khách hàng

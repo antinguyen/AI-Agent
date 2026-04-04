@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { ReceiptText, WalletCards, FileText } from 'lucide-react'
 import api from '../lib/api'
 import type { Invoice, Order, PageResponse, Payment, PaymentMethod } from '../lib/types'
 import PageHero from '../components/ui/PageHero'
@@ -56,14 +57,42 @@ export default function FinancePage() {
   })
 
   const fmt = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v)
+  const pendingPaymentAmount = payableOrders.reduce((sum, order) => sum + order.totalAmount, 0)
 
   return (
     <div className="space-y-5">
       <PageHero
         eyebrow="Finance"
         title="Thanh toán & hóa đơn"
-        description="Ghi nhận thanh toán cho đơn đã xác nhận và tra cứu hóa đơn phát sinh."
+        description="Không gian CRM cho thu tiền, theo dõi giao dịch và tra cứu hóa đơn theo thời gian thực."
+        aside={(
+          <div className="grid grid-cols-2 gap-3 text-sm md:w-[320px]">
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Đơn chờ thu</p>
+              <p className="mt-1 font-semibold text-gray-900">{payableOrders.length}</p>
+            </div>
+            <div className="panel-soft rounded-2xl px-4 py-3">
+              <p className="text-gray-500">Giá trị chờ thu</p>
+              <p className="mt-1 font-semibold text-gray-900">{fmt(pendingPaymentAmount)}</p>
+            </div>
+          </div>
+        )}
       />
+
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><ReceiptText size={14} /> Chờ thanh toán</p>
+          <p className="mt-2 text-2xl font-bold text-amber-700">{payableOrders.length}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><WalletCards size={14} /> Giao dịch</p>
+          <p className="mt-2 text-2xl font-bold text-teal-700">{payments.length}</p>
+        </div>
+        <div className="panel-soft rounded-2xl p-4">
+          <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-gray-500"><FileText size={14} /> Hóa đơn</p>
+          <p className="mt-2 text-2xl font-bold text-sky-700">{invoices.length}</p>
+        </div>
+      </section>
 
       <section className="panel-soft rounded-3xl p-5 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Đơn chờ thanh toán</h3>

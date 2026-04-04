@@ -26,7 +26,7 @@ export default function ModalShell({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-stone-100 text-lg font-bold text-gray-500 transition hover:bg-stone-200 hover:text-gray-900"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-lg font-bold text-gray-500 transition hover:bg-stone-100 hover:text-gray-900"
             aria-label="Đóng"
           >
             ×

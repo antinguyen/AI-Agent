@@ -79,6 +79,33 @@ h6 {
   opacity: 0.32;
 }
 
+.crm-hero-shell {
+  position: relative;
+  overflow: hidden;
+}
+
+.crm-hero-shell::after {
+  content: '';
+  position: absolute;
+  right: -120px;
+  top: -120px;
+  width: 260px;
+  height: 260px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.18) 0%, rgba(20, 184, 166, 0) 70%);
+  pointer-events: none;
+}
+
+.crm-hero-aside {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .crm-hero-aside {
+    width: auto;
+  }
+}
+
 .enter-up {
   animation: enter-up 420ms ease-out both;
 }
