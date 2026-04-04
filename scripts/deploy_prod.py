@@ -12,6 +12,7 @@ JSON_SCHEMA_VERSION = '1.0.0'
 RUN_ID = str(uuid.uuid4())
 STARTED_AT_UTC = datetime.now(timezone.utc)
 START_TICK = time.perf_counter()
+STEP_METRICS = []
 
 HOST = '192.168.1.200'
 USER = 'saleadmin'
@@ -78,6 +79,29 @@ def utc_now_iso():
 
 def elapsed_ms():
     return int((time.perf_counter() - START_TICK) * 1000)
+
+
+def begin_step(name):
+    return {
+        'name': name,
+        'startedAtUtc': utc_now_iso(),
+        'tick': time.perf_counter(),
+    }
+
+
+def end_step(step_ctx, status='success', detail=None):
+    ended_at = utc_now_iso()
+    duration = int((time.perf_counter() - step_ctx['tick']) * 1000)
+    step = {
+        'name': step_ctx['name'],
+        'status': status,
+        'startedAtUtc': step_ctx['startedAtUtc'],
+        'endedAtUtc': ended_at,
+        'durationMs': duration,
+    }
+    if detail is not None:
+        step['detail'] = detail
+    STEP_METRICS.append(step)
 
 
 def exit_with_payload(exit_code, status='success', message=None, error_code=None, data=None):
@@ -291,7 +315,9 @@ def run(client, cmd, timeout=60):
     print(f'  [exit {rc}]')
     return rc
 
+selection_step = begin_step('resolve_file_selection')
 CHANGED_FILES, selection_mode, all_candidates, skipped_files = resolve_changed_files(FORCE_DEPLOY, BASE_REF)
+end_step(selection_step, status='success', detail={'selectedCount': len(CHANGED_FILES), 'candidateCount': len(all_candidates)})
 payload_context = {
         'selectionMode': selection_mode,
     'modeSummary': build_mode_summary(selection_mode, FORCE_DEPLOY, BASE_REF, DRY_RUN, NO_BUILD, PRINT_JSON_ONLY),
@@ -312,6 +338,7 @@ payload_context = {
         'selectedFiles': CHANGED_FILES,
         'candidateCount': len(all_candidates),
         'isNoOp': len(CHANGED_FILES) == 0,
+        'steps': STEP_METRICS,
 }
 if VERBOSE:
     payload_context['skippedFiles'] = [
@@ -342,15 +369,20 @@ if DRY_RUN:
 
 client = paramiko.SSHClient()
 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+connect_step = begin_step('connect_ssh')
 try:
     client.connect(HOST, username=USER, password=PASS, timeout=10)
 except Exception as ex:
+    end_step(connect_step, status='error', detail='ssh_connect_failed')
     exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message=f'Failed to connect SSH host: {ex}', error_code='ssh_connect_failed', data=payload_context)
+end_step(connect_step, status='success')
 print(f'Connected to {HOST}')
 
 # ── STEP 1: Upload changed source files via SFTP ──
 print('\n--- STEP 1: Upload changed source files ---')
 sftp = client.open_sftp()
+upload_step = begin_step('upload_changed_files')
+uploaded_count = 0
 for rel_path in CHANGED_FILES:
     local_path = os.path.join(LOCAL_BASE, rel_path.replace('/', os.sep))
     remote_path = f'{REMOTE_BASE}/{rel_path}'
@@ -359,34 +391,47 @@ for rel_path in CHANGED_FILES:
         run(client, f'mkdir -p {remote_dir}', 10)
         sftp.put(local_path, remote_path)
         print(f'  UPLOADED: {rel_path}')
+        uploaded_count += 1
     except Exception as e:
         print(f'  FAILED:   {rel_path} -> {e}')
         sftp.close()
         client.close()
+        end_step(upload_step, status='error', detail={'uploadedCount': uploaded_count, 'failedFile': rel_path})
         exit_with_payload(EXIT_DEPLOY_FAILED, status='error', message=f'Failed to upload file: {rel_path}', error_code='upload_failed', data=payload_context)
 sftp.close()
+end_step(upload_step, status='success', detail={'uploadedCount': uploaded_count})
 
 # ── STEP 2: Rebuild ONLY the app (backend) — frontend already rebuilt ──
 if NO_BUILD:
     print('\n--- STEP 2: Build skipped (--no-build) ---')
+    build_step = begin_step('build_app')
+    end_step(build_step, status='skipped', detail='--no-build')
 else:
     print('\n--- STEP 2: docker compose build app (frontend already done) ---')
+    build_step = begin_step('build_app')
     rc = run(client, f'cd {REMOTE_BASE} && docker compose build --no-cache app 2>&1', 900)
     if rc != 0:
         print('BUILD FAILED — aborting')
         client.close()
+        end_step(build_step, status='error', detail={'exitCode': rc})
         exit_with_payload(EXIT_BUILD_FAILED, status='error', message='Build step failed', error_code='build_failed', data=payload_context)
+    end_step(build_step, status='success', detail={'exitCode': rc})
 
 # ── STEP 3: Bring up new containers ──
 print('\n--- STEP 3: docker compose up -d ---')
-run(client, f'cd {REMOTE_BASE} && docker compose up -d 2>&1', 120)
+compose_up_step = begin_step('compose_up')
+compose_up_rc = run(client, f'cd {REMOTE_BASE} && docker compose up -d 2>&1', 120)
+end_step(compose_up_step, status='success' if compose_up_rc == 0 else 'error', detail={'exitCode': compose_up_rc})
 
 # ── STEP 4: Health check ──
 print('\n--- STEP 4: Container status ---')
-run(client, 'docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"', 15)
+container_status_step = begin_step('container_status')
+container_status_rc = run(client, 'docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"', 15)
+end_step(container_status_step, status='success' if container_status_rc == 0 else 'error', detail={'exitCode': container_status_rc})
 
 print('\n--- STEP 5: Backend health ping (wait up to 60s for Spring Boot) ---')
-run(
+backend_health_step = begin_step('backend_health_ping')
+backend_health_rc = run(
     client,
     "for i in $(seq 1 12); do "
     "  code=$(curl -s -o /dev/null -w '%{http_code}' 'http://localhost:8080/api/v1/products?page=0&size=1' || true); "
@@ -399,9 +444,12 @@ run(
     "done",
     75,
 )
+end_step(backend_health_step, status='success' if backend_health_rc == 0 else 'error', detail={'exitCode': backend_health_rc})
 
 print('\n--- STEP 6: Frontend health ping ---')
-run(client, 'curl -sf http://localhost/ -o /dev/null && echo FRONTEND_OK || echo FRONTEND_FAIL', 10)
+frontend_health_step = begin_step('frontend_health_ping')
+frontend_health_rc = run(client, 'curl -sf http://localhost/ -o /dev/null && echo FRONTEND_OK || echo FRONTEND_FAIL', 10)
+end_step(frontend_health_step, status='success' if frontend_health_rc == 0 else 'error', detail={'exitCode': frontend_health_rc})
 
 client.close()
 print('\nDEPLOY_RESULT=DONE')
