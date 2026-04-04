@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext'
 import type { PageResponse, EmployeeItem, CreateEmployeeRequest } from '../lib/types'
 import PageHero from '../components/ui/PageHero'
 import PaginationBar from '../components/ui/PaginationBar'
+import useDebouncedValue from '../hooks/useDebouncedValue'
 
 export default function EmployeesPage() {
   const { user } = useAuth()
@@ -19,6 +20,9 @@ export default function EmployeesPage() {
   const [usernameFilter, setUsernameFilter] = useState('')
   const [firstNameFilter, setFirstNameFilter] = useState('')
   const [departmentFilter, setDepartmentFilter] = useState('')
+  const debouncedUsernameFilter = useDebouncedValue(usernameFilter, 300)
+  const debouncedFirstNameFilter = useDebouncedValue(firstNameFilter, 300)
+  const debouncedDepartmentFilter = useDebouncedValue(departmentFilter, 300)
   const [roleFilter, setRoleFilter] = useState<'ALL' | 'ADMIN' | 'HR' | 'MANAGER' | 'EMPLOYEE'>('ALL')
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'true' | 'false'>('ALL')
 
@@ -28,14 +32,14 @@ export default function EmployeesPage() {
 
   // Fetch employees list
   const { data, isLoading, isError } = useQuery<PageResponse<EmployeeItem>>({
-    queryKey: ['employees', page, usernameFilter, firstNameFilter, departmentFilter, roleFilter, activeFilter],
+    queryKey: ['employees', page, debouncedUsernameFilter, debouncedFirstNameFilter, debouncedDepartmentFilter, roleFilter, activeFilter],
     queryFn: () => api.get('/employees', {
       params: {
         page,
         size: 12,
-        username: usernameFilter || undefined,
-        firstName: firstNameFilter || undefined,
-        department: departmentFilter || undefined,
+        username: debouncedUsernameFilter || undefined,
+        firstName: debouncedFirstNameFilter || undefined,
+        department: debouncedDepartmentFilter || undefined,
         role: roleFilter === 'ALL' ? undefined : roleFilter,
         active: activeFilter === 'ALL' ? undefined : activeFilter,
       },

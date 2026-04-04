@@ -10,6 +10,7 @@ import { useConfirmDialog } from '../components/ui/ConfirmDialogProvider'
 import PageHero from '../components/ui/PageHero'
 import PaginationBar from '../components/ui/PaginationBar'
 import { useAuth } from '../contexts/AuthContext'
+import useDebouncedValue from '../hooks/useDebouncedValue'
 
 const MAX_IMAGE_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024
 const MAX_IMPORT_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
@@ -329,6 +330,7 @@ export default function ProductsPage() {
   const { isAdmin } = useAuth()
   const [page, setPage] = useState(0)
   const [keyword, setKeyword] = useState('')
+  const debouncedKeyword = useDebouncedValue(keyword, 300)
   const [supplierFilter, setSupplierFilter] = useState('')
   const [brandFilter, setBrandFilter] = useState('')
   const [originFilter, setOriginFilter] = useState('')
@@ -370,7 +372,7 @@ export default function ProductsPage() {
 
   const { data } = useQuery<PageResponse<Product>>({
     queryKey: [
-      'products', page, keyword, supplierFilter, brandFilter, originFilter, categoryFilter, currencyFilter,
+      'products', page, debouncedKeyword, supplierFilter, brandFilter, originFilter, categoryFilter, currencyFilter,
       priceFromFilter, priceToFilter, yearFromFilter, yearToFilter,
     ],
     queryFn: () =>
@@ -378,8 +380,8 @@ export default function ProductsPage() {
         params: {
           page,
           size: 15,
-          name: keyword || undefined,
-          sku: keyword || undefined,
+          name: debouncedKeyword || undefined,
+          sku: debouncedKeyword || undefined,
           supplier: supplierFilter || undefined,
           brand: brandFilter || undefined,
           originCountry: originFilter || undefined,

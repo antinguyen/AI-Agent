@@ -9,6 +9,7 @@ import { useToast } from '../components/ui/ToastProvider'
 import { useConfirmDialog } from '../components/ui/ConfirmDialogProvider'
 import PageHero from '../components/ui/PageHero'
 import PaginationBar from '../components/ui/PaginationBar'
+import useDebouncedValue from '../hooks/useDebouncedValue'
 
 function CustomerForm({ defaultValues, onSubmit, isPending }: {
   defaultValues?: Partial<CustomerRequest>
@@ -74,6 +75,7 @@ export default function CustomersPage() {
   const { confirm } = useConfirmDialog()
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search, 300)
   const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null)
   const [selected, setSelected] = useState<Customer | null>(null)
 
@@ -94,9 +96,9 @@ export default function CustomersPage() {
   }
 
   const { data } = useQuery<PageResponse<Customer>>({
-    queryKey: ['customers', page, search],
+    queryKey: ['customers', page, debouncedSearch],
     queryFn: () =>
-      api.get('/customers', { params: { page, size: 15, name: search || undefined } }).then((r) => r.data),
+      api.get('/customers', { params: { page, size: 15, name: debouncedSearch || undefined } }).then((r) => r.data),
   })
 
   const createMutation = useMutation({

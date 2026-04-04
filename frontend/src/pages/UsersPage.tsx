@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext'
 import type { PageResponse, RegisterRequest } from '../lib/types'
 import PageHero from '../components/ui/PageHero'
 import PaginationBar from '../components/ui/PaginationBar'
+import useDebouncedValue from '../hooks/useDebouncedValue'
 
 interface UserItem {
   id: number
@@ -25,6 +26,7 @@ export default function UsersPage() {
   const { showToast } = useToast()
   const [page, setPage] = useState(0)
   const [usernameFilter, setUsernameFilter] = useState('')
+  const debouncedUsernameFilter = useDebouncedValue(usernameFilter, 300)
   const [roleFilter, setRoleFilter] = useState<'ALL' | 'ADMIN' | 'STAFF'>('ALL')
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'true' | 'false'>('ALL')
 
@@ -33,12 +35,12 @@ export default function UsersPage() {
   })
 
   const { data, isLoading, isError } = useQuery<PageResponse<UserItem>>({
-    queryKey: ['users', page, usernameFilter, roleFilter, activeFilter],
+    queryKey: ['users', page, debouncedUsernameFilter, roleFilter, activeFilter],
     queryFn: () => api.get('/users', {
       params: {
         page,
         size: 12,
-        username: usernameFilter || undefined,
+        username: debouncedUsernameFilter || undefined,
         role: roleFilter === 'ALL' ? undefined : roleFilter,
         active: activeFilter === 'ALL' ? undefined : activeFilter,
       },
