@@ -342,6 +342,8 @@ export default function ProductsPage() {
   const [selected, setSelected] = useState<Product | null>(null)
   const [importing, setImporting] = useState(false)
   const [importFileLabel, setImportFileLabel] = useState('')
+  const [importSummary, setImportSummary] = useState<ProductImportResponse | null>(null)
+  const [importValidationMessage, setImportValidationMessage] = useState('')
   const importInputRef = useRef<HTMLInputElement | null>(null)
 
   const parseNumberFilter = (value: string) => {
@@ -436,6 +438,9 @@ export default function ProductsPage() {
   const handleImportProducts = async (file?: File) => {
     if (!file || importing) return
 
+    setImportSummary(null)
+    setImportValidationMessage('')
+
     const fileName = file.name.toLowerCase()
     const isCsv = file.type === 'text/csv' || fileName.endsWith('.csv')
     if (!isCsv) {
@@ -463,8 +468,10 @@ export default function ProductsPage() {
         title: 'CSV chưa hợp lệ để import',
         message: csvValidation.message ?? 'Vui lòng kiểm tra lại header và dữ liệu CSV.',
       })
+      setImportValidationMessage(csvValidation.message ?? 'CSV chưa hợp lệ.')
       return
     }
+    setImportValidationMessage('CSV hợp lệ. Đang chuẩn bị import...')
 
     setImporting(true)
     try {
@@ -478,6 +485,7 @@ export default function ProductsPage() {
       qc.invalidateQueries({ queryKey: ['product-options'] })
 
       const summary = response.data
+      setImportSummary(summary)
       const errorPreview = summary.errors.slice(0, 3).join(' | ')
       showToast({
         tone: summary.failedRows > 0 ? 'error' : 'success',
@@ -489,18 +497,43 @@ export default function ProductsPage() {
       if (summary.failedRows === 0) {
         setImportFileLabel('')
       }
+      setImportValidationMessage(
+        summary.failedRows > 0
+          ? `Import hoàn tất: ${summary.importedRows}/${summary.totalRows} thành công, còn ${summary.failedRows} lỗi.`
+          : `Import hoàn tất: ${summary.importedRows}/${summary.totalRows} dòng thành công.`,
+      )
     } catch (error) {
       showToast({
         tone: 'error',
         title: 'Import that bai',
         message: extractApiError(error, 'Khong the import file. Vui long kiem tra dinh dang CSV.'),
       })
+      setImportValidationMessage('Import thất bại. Vui lòng kiểm tra lại file CSV hoặc dữ liệu đầu vào.')
     } finally {
       setImporting(false)
       if (importInputRef.current) {
         importInputRef.current.value = ''
       }
     }
+  }
+
+  const downloadCsvTemplate = () => {
+    const templateRows = [
+      'sku,name,price,stockquantity,description,purchaseprice,unit,currencycode,imageurl,supplier,brand,origincountry,manufactureyear,lowstockthreshold,active',
+      'SKU001,San pham mau 1,120000,25,Mo ta ngan,90000,pcs,VND,,Nha cung cap A,Brand A,VN,2025,10,true',
+      'SKU002,San pham mau 2,250000,12,Mo ta ngan 2,180000,pcs,VND,,Nha cung cap B,Brand B,JP,2024,8,true',
+    ]
+    const content = `\uFEFF${templateRows.join('\n')}`
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'products-import-template.csv'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+    showToast({ tone: 'success', title: 'Đã tải file mẫu CSV import' })
   }
 
   const formatCurrency = (v: number, currencyCode: string) =>
@@ -532,6 +565,13 @@ export default function ProductsPage() {
               onChange={(e) => handleImportProducts(e.target.files?.[0])}
             />
             <button
+              type="button"
+              onClick={downloadCsvTemplate}
+              className="flex items-center gap-2 rounded-xl border border-sky-300 bg-sky-50 px-4 py-2.5 text-sm font-semibold text-sky-700 hover:bg-sky-100"
+            >
+              Tải CSV mẫu
+            </button>
+            <button
               onClick={() => { setSelected(null); setModalMode('create') }}
               className="flex items-center gap-2 bg-teal-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-teal-800 w-fit"
             >
@@ -556,9 +596,29 @@ export default function ProductsPage() {
       </div>
 
       {isAdmin && (
-        <div className="rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-xs text-gray-600">
+        <div className="space-y-2 rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-xs text-gray-600">
           <p className="font-semibold text-gray-700">Import CSV yêu cầu header: sku, name, price, stockquantity.</p>
           <p className="mt-1">{importFileLabel ? `File đã chọn: ${importFileLabel}` : 'Chưa chọn file import.'}</p>
+          {importValidationMessage && (
+            <p className={`font-medium ${importSummary?.failedRows ? 'text-amber-700' : 'text-teal-700'}`}>{importValidationMessage}</p>
+          )}
+          {importSummary && (
+            <div className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs text-gray-700">
+              <p className="font-semibold text-gray-800">
+                Kết quả import gần nhất: {importSummary.importedRows}/{importSummary.totalRows} thành công, {importSummary.failedRows} lỗi.
+              </p>
+              {importSummary.errors.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {importSummary.errors.slice(0, 5).map((error, index) => (
+                    <p key={`${index}-${error}`} className="text-rose-700">- {error}</p>
+                  ))}
+                  {importSummary.errors.length > 5 && (
+                    <p className="text-gray-500">... còn {importSummary.errors.length - 5} lỗi khác (xem toast/API response để biết đầy đủ).</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
