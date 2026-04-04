@@ -96,7 +96,7 @@ def resolve_changed_files():
         if os.path.isfile(local_path):
             deployable.append(rel_path)
 
-    if deployable:
+    if combined:
         return deployable
 
     fallback = []
@@ -120,8 +120,8 @@ def run(client, cmd, timeout=60):
 CHANGED_FILES = resolve_changed_files()
 print(f'Prepared {len(CHANGED_FILES)} file(s) for upload')
 if not CHANGED_FILES:
-    print('No deployable files detected from git diff; aborting deploy to avoid empty rollout')
-    sys.exit(1)
+    print('No deployable files detected from git changes; nothing to deploy')
+    sys.exit(0)
 
 client = paramiko.SSHClient()
 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
