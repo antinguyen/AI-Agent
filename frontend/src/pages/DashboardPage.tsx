@@ -1,10 +1,12 @@
+import { lazy, Suspense } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { TrendingUp, ShoppingCart, Clock, AlertTriangle, Users, ChevronRight, ClipboardList } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import api from '../lib/api'
 import type { DashboardKpi, Order } from '../lib/types'
 import PageHero from '../components/ui/PageHero'
+
+const RecentOrdersBarChart = lazy(() => import('../components/charts/RecentOrdersBarChart'))
 
 const STATUS_LABEL: Record<string, string> = {
   CREATED: 'Mới', CONFIRMED: 'Xác nhận', PAID: 'Đã trả', CANCELLED: 'Huỷ', RETURNED: 'Trả hàng',
@@ -163,15 +165,9 @@ export default function DashboardPage() {
               <div className="crm-empty-card text-sm">Chưa có dữ liệu để hiển thị biểu đồ</div>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-                <XAxis dataKey="id" tick={{ fontSize: 12, fill: '#57534e' }} />
-                <YAxis tick={{ fontSize: 12, fill: '#57534e' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(value) => formatCurrency(typeof value === 'number' ? value : undefined)} />
-                <Bar dataKey="amount" fill="#0f766e" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="crm-skeleton-block h-[200px] rounded-2xl" />}>
+              <RecentOrdersBarChart data={chartData} formatCurrency={formatCurrency} />
+            </Suspense>
           )}
         </div>
 
