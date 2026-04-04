@@ -107,3 +107,21 @@ Restore:
 ```bash
 cat backup.sql | docker exec -i sales-postgres psql -U postgres -d sales_management
 ```
+
+## 8) Release Checklist
+
+### Pre-release
+
+1. Xác nhận nhánh `master` đã cập nhật đầy đủ commit cần phát hành.
+2. Chạy CI xanh (bao gồm deploy CLI regression + Maven tests).
+3. Kiểm tra thay đổi DB migration (nếu có), đảm bảo đã review rollback strategy.
+4. Chuẩn bị backup PostgreSQL trước deploy production.
+5. Xác nhận secret bắt buộc cho smoke (`SMOKE_PASSWORD`) còn hiệu lực.
+
+### Post-deploy
+
+1. Chạy live smoke script hoặc workflow manual `Live Smoke`.
+2. Kiểm tra health backend/frontend và trạng thái container.
+3. Kiểm tra nhanh chức năng trọng yếu: login, products list, order flow cơ bản.
+4. Theo dõi log app trong 10-15 phút đầu để phát hiện lỗi runtime.
+5. Nếu có lỗi nghiêm trọng: rollback theo mục 6 và chạy smoke lại.
