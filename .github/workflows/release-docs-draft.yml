@@ -1,0 +1,63 @@
+name: Release Docs Draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version (e.g. 2.8.0)
+        required: true
+        type: string
+      release_date:
+        description: Release date in YYYY-MM-DD (default: today)
+        required: false
+        default: ""
+        type: string
+      update_changelog:
+        description: Include changelog draft update
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  generate-release-docs:
+    name: Generate Release Docs Draft
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate release docs draft
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${{ inputs.version }}"
+          RELEASE_DATE="${{ inputs.release_date }}"
+          UPDATE_CHANGELOG="${{ inputs.update_changelog }}"
+
+          mkdir -p out/release-docs
+          cp CHANGELOG.md out/release-docs/CHANGELOG.generated.md
+
+          args=(scripts/new_release_note.py --version "$VERSION" --output "out/release-docs/RELEASE_ANNOUNCEMENT_${VERSION//./_}.md")
+
+          if [ -n "$RELEASE_DATE" ]; then
+            args+=(--date "$RELEASE_DATE")
+          fi
+
+          if [ "$UPDATE_CHANGELOG" = "true" ]; then
+            args+=(--update-changelog --changelog-path out/release-docs/CHANGELOG.generated.md)
+          fi
+
+          python -u "${args[@]}"
+
+      - name: Upload draft artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-docs-draft-${{ inputs.version }}
+          path: out/release-docs/
+          retention-days: 7

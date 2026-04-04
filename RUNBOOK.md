@@ -82,6 +82,18 @@ Script checks:
 - Secret bắt buộc: `SMOKE_PASSWORD`.
 - Dùng sau deploy production-like để xác nhận nhanh luồng login + API trọng yếu.
 
+### Release Docs Draft (`.github/workflows/release-docs-draft.yml`)
+
+- Trigger: `workflow_dispatch` (manual).
+- Input:
+	- `version` (bắt buộc, ví dụ `2.8.0`)
+	- `release_date` (tuỳ chọn, mặc định dùng ngày chạy workflow)
+	- `update_changelog` (true/false)
+- Kết quả: artifact `release-docs-draft-<version>` gồm:
+	- `RELEASE_ANNOUNCEMENT_<version>.md`
+	- `CHANGELOG.generated.md` (nếu bật `update_changelog`)
+- Dùng khi cần tạo trước release docs để review trước khi commit vào repo.
+
 ## 6) Rollback
 
 1. Trên server, rollback source theo bản lưu trước đó.
