@@ -1,5 +1,11 @@
 import paramiko, sys, os, subprocess, json
 
+EXIT_SUCCESS = 0
+EXIT_GENERAL_ERROR = 1
+EXIT_INVALID_ARGS = 2
+EXIT_BUILD_FAILED = 3
+EXIT_DEPLOY_FAILED = 4
+
 HOST = '192.168.1.200'
 USER = 'saleadmin'
 PASS = 'Kcgqhdltd1@'
@@ -55,6 +61,25 @@ DRY_RUN = '--dry-run' in sys.argv
 VERBOSE = '--verbose' in sys.argv
 NO_BUILD = '--no-build' in sys.argv
 PRINT_JSON = '--print-json' in sys.argv
+HELP = '--help' in sys.argv or '-h' in sys.argv
+
+
+def print_usage():
+    print('Usage: python scripts/deploy_prod.py [options]')
+    print('Options:')
+    print('  --help, -h            Show this help message')
+    print('  --dry-run             Resolve file list and stop before SSH/deploy')
+    print('  --force               Deploy using DEFAULT_DEPLOY_FILES list')
+    print('  --base-ref <ref>      Deploy files changed from <ref>...HEAD')
+    print('  --no-build            Skip docker compose build step')
+    print('  --print-json          Print machine-readable JSON summary')
+    print('  --verbose             Print skipped-file reasons')
+    print('Exit codes:')
+    print(f'  {EXIT_SUCCESS}: success/no-op')
+    print(f'  {EXIT_GENERAL_ERROR}: general failure')
+    print(f'  {EXIT_INVALID_ARGS}: invalid arguments')
+    print(f'  {EXIT_BUILD_FAILED}: build step failed')
+    print(f'  {EXIT_DEPLOY_FAILED}: deploy/upload failed')
 
 
 def parse_option_value(option_name):
@@ -63,15 +88,42 @@ def parse_option_value(option_name):
     index = sys.argv.index(option_name)
     if index + 1 >= len(sys.argv):
         print(f'Missing value for {option_name}')
-        sys.exit(2)
+        sys.exit(EXIT_INVALID_ARGS)
     return sys.argv[index + 1].strip()
 
 
 BASE_REF = parse_option_value('--base-ref')
 
+
+def validate_args():
+    known_switches = {
+        '--help', '-h', '--force', '--dry-run', '--verbose', '--no-build', '--print-json', '--base-ref',
+    }
+    skip_next = False
+    for index, arg in enumerate(sys.argv[1:], start=1):
+        if skip_next:
+            skip_next = False
+            continue
+        if arg == '--base-ref':
+            if index + 1 >= len(sys.argv):
+                print('Missing value for --base-ref')
+                sys.exit(EXIT_INVALID_ARGS)
+            skip_next = True
+            continue
+        if arg.startswith('-') and arg not in known_switches:
+            print(f'Unknown option: {arg}')
+            sys.exit(EXIT_INVALID_ARGS)
+
+
+if HELP:
+    print_usage()
+    sys.exit(EXIT_SUCCESS)
+
+validate_args()
+
 if FORCE_DEPLOY and BASE_REF:
     print('Invalid options: --force cannot be used together with --base-ref')
-    sys.exit(2)
+    sys.exit(EXIT_INVALID_ARGS)
 
 
 def git_ref_exists(ref_name):
@@ -117,7 +169,7 @@ def resolve_changed_files(force_mode=False, base_ref=None):
     if base_ref:
         if not git_ref_exists(base_ref):
             print(f'Invalid --base-ref: {base_ref}')
-            sys.exit(2)
+            sys.exit(EXIT_INVALID_ARGS)
         arg_sets = (
             ['diff', '--name-only', f'{base_ref}...HEAD'],
             ['diff', '--name-only', '--cached'],
@@ -194,7 +246,7 @@ if VERBOSE and skipped_files:
         print(f'  - {rel_path} ({reason})')
 if not CHANGED_FILES:
     print('No deployable files detected from git changes; nothing to deploy')
-    sys.exit(0)
+    sys.exit(EXIT_SUCCESS)
 if PRINT_JSON:
     payload = {
         'selectionMode': selection_mode,
@@ -214,11 +266,15 @@ if PRINT_JSON:
     print(json.dumps(payload, ensure_ascii=False))
 if DRY_RUN:
     print('Dry-run mode enabled; stopping before SSH/deploy steps')
-    sys.exit(0)
+    sys.exit(EXIT_SUCCESS)
 
 client = paramiko.SSHClient()
 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-client.connect(HOST, username=USER, password=PASS, timeout=10)
+try:
+    client.connect(HOST, username=USER, password=PASS, timeout=10)
+except Exception as ex:
+    print(f'Failed to connect SSH host: {ex}')
+    sys.exit(EXIT_DEPLOY_FAILED)
 print(f'Connected to {HOST}')
 
 # ── STEP 1: Upload changed source files via SFTP ──
@@ -234,6 +290,9 @@ for rel_path in CHANGED_FILES:
         print(f'  UPLOADED: {rel_path}')
     except Exception as e:
         print(f'  FAILED:   {rel_path} -> {e}')
+        sftp.close()
+        client.close()
+        sys.exit(EXIT_DEPLOY_FAILED)
 sftp.close()
 
 # ── STEP 2: Rebuild ONLY the app (backend) — frontend already rebuilt ──
@@ -245,7 +304,7 @@ else:
     if rc != 0:
         print('BUILD FAILED — aborting')
         client.close()
-        sys.exit(1)
+        sys.exit(EXIT_BUILD_FAILED)
 
 # ── STEP 3: Bring up new containers ──
 print('\n--- STEP 3: docker compose up -d ---')
@@ -275,4 +334,5 @@ run(client, 'curl -sf http://localhost/ -o /dev/null && echo FRONTEND_OK || echo
 
 client.close()
 print('\nDEPLOY_RESULT=DONE')
+sys.exit(EXIT_SUCCESS)
 
