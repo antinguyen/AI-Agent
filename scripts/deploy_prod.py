@@ -61,6 +61,7 @@ DRY_RUN = '--dry-run' in sys.argv
 VERBOSE = '--verbose' in sys.argv
 NO_BUILD = '--no-build' in sys.argv
 PRINT_JSON = '--print-json' in sys.argv
+PRINT_JSON_ONLY = '--print-json-only' in sys.argv
 HELP = '--help' in sys.argv or '-h' in sys.argv
 
 
@@ -73,6 +74,7 @@ def print_usage():
     print('  --base-ref <ref>      Deploy files changed from <ref>...HEAD')
     print('  --no-build            Skip docker compose build step')
     print('  --print-json          Print machine-readable JSON summary')
+    print('  --print-json-only     Print JSON only (no text logs, implies --dry-run)')
     print('  --verbose             Print skipped-file reasons')
     print('Exit codes:')
     print(f'  {EXIT_SUCCESS}: success/no-op')
@@ -97,7 +99,7 @@ BASE_REF = parse_option_value('--base-ref')
 
 def validate_args():
     known_switches = {
-        '--help', '-h', '--force', '--dry-run', '--verbose', '--no-build', '--print-json', '--base-ref',
+        '--help', '-h', '--force', '--dry-run', '--verbose', '--no-build', '--print-json', '--print-json-only', '--base-ref',
     }
     skip_next = False
     for index, arg in enumerate(sys.argv[1:], start=1):
@@ -124,6 +126,11 @@ validate_args()
 if FORCE_DEPLOY and BASE_REF:
     print('Invalid options: --force cannot be used together with --base-ref')
     sys.exit(EXIT_INVALID_ARGS)
+if PRINT_JSON_ONLY and not DRY_RUN:
+    print('Invalid options: --print-json-only requires --dry-run')
+    sys.exit(EXIT_INVALID_ARGS)
+if PRINT_JSON_ONLY:
+    PRINT_JSON = True
 
 
 def git_ref_exists(ref_name):
@@ -234,6 +241,27 @@ def run(client, cmd, timeout=60):
     return rc
 
 CHANGED_FILES, selection_mode, all_candidates, skipped_files = resolve_changed_files(FORCE_DEPLOY, BASE_REF)
+if PRINT_JSON:
+    payload = {
+        'selectionMode': selection_mode,
+        'baseRef': BASE_REF,
+        'forceDeploy': FORCE_DEPLOY,
+        'dryRun': DRY_RUN,
+        'noBuild': NO_BUILD,
+        'printJsonOnly': PRINT_JSON_ONLY,
+        'selectedCount': len(CHANGED_FILES),
+        'selectedFiles': CHANGED_FILES,
+        'candidateCount': len(all_candidates),
+        'isNoOp': len(CHANGED_FILES) == 0,
+    }
+    if VERBOSE:
+        payload['skippedFiles'] = [
+            {'path': path, 'reason': reason}
+            for path, reason in skipped_files
+        ]
+    print(json.dumps(payload, ensure_ascii=False))
+if PRINT_JSON_ONLY:
+    sys.exit(EXIT_SUCCESS)
 print(f'Selection mode: {selection_mode}')
 print(f'Prepared {len(CHANGED_FILES)} file(s) for upload')
 if CHANGED_FILES:
@@ -247,23 +275,6 @@ if VERBOSE and skipped_files:
 if not CHANGED_FILES:
     print('No deployable files detected from git changes; nothing to deploy')
     sys.exit(EXIT_SUCCESS)
-if PRINT_JSON:
-    payload = {
-        'selectionMode': selection_mode,
-        'baseRef': BASE_REF,
-        'forceDeploy': FORCE_DEPLOY,
-        'dryRun': DRY_RUN,
-        'noBuild': NO_BUILD,
-        'selectedCount': len(CHANGED_FILES),
-        'selectedFiles': CHANGED_FILES,
-        'candidateCount': len(all_candidates),
-    }
-    if VERBOSE:
-        payload['skippedFiles'] = [
-            {'path': path, 'reason': reason}
-            for path, reason in skipped_files
-        ]
-    print(json.dumps(payload, ensure_ascii=False))
 if DRY_RUN:
     print('Dry-run mode enabled; stopping before SSH/deploy steps')
     sys.exit(EXIT_SUCCESS)
