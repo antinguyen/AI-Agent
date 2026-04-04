@@ -114,9 +114,10 @@ cat backup.sql | docker exec -i sales-postgres psql -U postgres -d sales_managem
 
 1. Xác nhận nhánh `master` đã cập nhật đầy đủ commit cần phát hành.
 2. Chạy CI xanh (bao gồm deploy CLI regression + Maven tests).
-3. Kiểm tra thay đổi DB migration (nếu có), đảm bảo đã review rollback strategy.
-4. Chuẩn bị backup PostgreSQL trước deploy production.
-5. Xác nhận secret bắt buộc cho smoke (`SMOKE_PASSWORD`) còn hiệu lực.
+3. Soạn release note theo template `RELEASE_TEMPLATE.md`.
+4. Kiểm tra thay đổi DB migration (nếu có), đảm bảo đã review rollback strategy.
+5. Chuẩn bị backup PostgreSQL trước deploy production.
+6. Xác nhận secret bắt buộc cho smoke (`SMOKE_PASSWORD`) còn hiệu lực.
 
 ### Post-deploy
 
