@@ -1,4 +1,4 @@
-import paramiko, sys, os, subprocess
+import paramiko, sys, os, subprocess, json
 
 HOST = '192.168.1.200'
 USER = 'saleadmin'
@@ -53,6 +53,8 @@ ALLOWED_EXACT_FILES = {
 FORCE_DEPLOY = '--force' in sys.argv
 DRY_RUN = '--dry-run' in sys.argv
 VERBOSE = '--verbose' in sys.argv
+NO_BUILD = '--no-build' in sys.argv
+PRINT_JSON = '--print-json' in sys.argv
 
 
 def parse_option_value(option_name):
@@ -66,6 +68,10 @@ def parse_option_value(option_name):
 
 
 BASE_REF = parse_option_value('--base-ref')
+
+if FORCE_DEPLOY and BASE_REF:
+    print('Invalid options: --force cannot be used together with --base-ref')
+    sys.exit(2)
 
 
 def git_ref_exists(ref_name):
@@ -189,6 +195,23 @@ if VERBOSE and skipped_files:
 if not CHANGED_FILES:
     print('No deployable files detected from git changes; nothing to deploy')
     sys.exit(0)
+if PRINT_JSON:
+    payload = {
+        'selectionMode': selection_mode,
+        'baseRef': BASE_REF,
+        'forceDeploy': FORCE_DEPLOY,
+        'dryRun': DRY_RUN,
+        'noBuild': NO_BUILD,
+        'selectedCount': len(CHANGED_FILES),
+        'selectedFiles': CHANGED_FILES,
+        'candidateCount': len(all_candidates),
+    }
+    if VERBOSE:
+        payload['skippedFiles'] = [
+            {'path': path, 'reason': reason}
+            for path, reason in skipped_files
+        ]
+    print(json.dumps(payload, ensure_ascii=False))
 if DRY_RUN:
     print('Dry-run mode enabled; stopping before SSH/deploy steps')
     sys.exit(0)
@@ -214,12 +237,15 @@ for rel_path in CHANGED_FILES:
 sftp.close()
 
 # ── STEP 2: Rebuild ONLY the app (backend) — frontend already rebuilt ──
-print('\n--- STEP 2: docker compose build app (frontend already done) ---')
-rc = run(client, f'cd {REMOTE_BASE} && docker compose build --no-cache app 2>&1', 900)
-if rc != 0:
-    print('BUILD FAILED — aborting')
-    client.close()
-    sys.exit(1)
+if NO_BUILD:
+    print('\n--- STEP 2: Build skipped (--no-build) ---')
+else:
+    print('\n--- STEP 2: docker compose build app (frontend already done) ---')
+    rc = run(client, f'cd {REMOTE_BASE} && docker compose build --no-cache app 2>&1', 900)
+    if rc != 0:
+        print('BUILD FAILED — aborting')
+        client.close()
+        sys.exit(1)
 
 # ── STEP 3: Bring up new containers ──
 print('\n--- STEP 3: docker compose up -d ---')
