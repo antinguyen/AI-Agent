@@ -882,6 +882,42 @@ export default function OrdersPage() {
     showToast({ tone: 'success', title: 'Đã xuất CSV lỗi xử lý hàng loạt' })
   }
 
+  const copyFailedOrderIds = async () => {
+    const failedIds = Array.from(new Set(sortedBulkFailureDetails.map((item) => item.orderId)))
+    if (failedIds.length === 0) {
+      showToast({ tone: 'info', title: 'Không có Order ID để sao chép' })
+      return
+    }
+
+    const text = failedIds.join(',')
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        const textarea = document.createElement('textarea')
+        textarea.value = text
+        textarea.style.position = 'fixed'
+        textarea.style.left = '-9999px'
+        document.body.appendChild(textarea)
+        textarea.focus()
+        textarea.select()
+        document.execCommand('copy')
+        textarea.remove()
+      }
+      showToast({
+        tone: 'success',
+        title: 'Đã copy Order ID lỗi',
+        message: `${failedIds.length} ID đã được sao chép để bạn xử lý nhanh.`,
+      })
+    } catch {
+      showToast({
+        tone: 'error',
+        title: 'Không thể sao chép Order ID',
+        message: 'Trình duyệt không cho phép copy tự động. Vui lòng copy thủ công từ bảng.',
+      })
+    }
+  }
+
   return (
     <div className="space-y-5">
       <PageHero eyebrow="Fulfillment" title="Đơn hàng" description="Theo dõi vòng đời đơn hàng từ tạo mới đến thanh toán, huỷ hoặc hoàn trả." />
@@ -1336,13 +1372,22 @@ export default function OrdersPage() {
                   <span> / {bulkFailureDetails.length}</span>
                 )}
               </p>
-              <button
-                type="button"
-                onClick={exportBulkFailuresCsv}
-                className="rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-teal-300 hover:text-teal-700"
-              >
-                Xuất CSV lỗi
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => { void copyFailedOrderIds() }}
+                  className="rounded-xl border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100"
+                >
+                  Copy Order ID lỗi
+                </button>
+                <button
+                  type="button"
+                  onClick={exportBulkFailuresCsv}
+                  className="rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-teal-300 hover:text-teal-700"
+                >
+                  Xuất CSV lỗi
+                </button>
+              </div>
             </div>
             <input
               type="text"

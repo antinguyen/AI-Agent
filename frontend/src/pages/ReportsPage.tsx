@@ -48,6 +48,8 @@ export default function ReportsPage() {
   const [from, setFrom] = useState(initialRange.from)
   const [to, setTo] = useState(initialRange.to)
   const [exporting, setExporting] = useState(false)
+  const [exportProgress, setExportProgress] = useState<number>(0)
+  const [exportStatusText, setExportStatusText] = useState('')
   const { showToast } = useToast()
   const { formatCurrency } = useUserPreference()
 
@@ -79,11 +81,26 @@ export default function ReportsPage() {
     }
 
     setExporting(true)
+    setExportProgress(5)
+    setExportStatusText('Đang gửi yêu cầu export...')
     try {
       const res = await api.get('/reports/export', {
         params: { format: 'xlsx', from, to },
         responseType: 'blob',
+        onDownloadProgress: (event) => {
+          if (!event.total) {
+            setExportProgress((current) => (current < 70 ? current + 5 : current))
+            setExportStatusText('Đang nhận dữ liệu từ server...')
+            return
+          }
+          const ratio = event.loaded / event.total
+          const nextValue = Math.min(90, Math.max(10, Math.round(ratio * 90)))
+          setExportProgress(nextValue)
+          setExportStatusText(`Đang tải dữ liệu export... ${nextValue}%`)
+        },
       })
+      setExportProgress(95)
+      setExportStatusText('Đang chuẩn bị file tải về...')
       const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -94,10 +111,16 @@ export default function ReportsPage() {
       a.click()
       a.remove()
       window.URL.revokeObjectURL(url)
+      setExportProgress(100)
+      setExportStatusText('Hoàn tất export.')
       showToast({ tone: 'success', title: 'Đã xuất file Excel' })
     } catch {
       showToast({ tone: 'error', title: 'Không thể export Excel' })
     } finally {
+      window.setTimeout(() => {
+        setExportProgress(0)
+        setExportStatusText('')
+      }, 900)
       setExporting(false)
     }
   }
@@ -132,6 +155,20 @@ export default function ReportsPage() {
         </div>
         {isInvalidDateRange && (
           <p className="text-sm text-rose-600">Khoảng ngày không hợp lệ: Từ ngày phải nhỏ hơn hoặc bằng đến ngày.</p>
+        )}
+        {exporting && (
+          <div className="space-y-2 rounded-2xl border border-teal-200 bg-teal-50/70 px-3 py-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-teal-800">
+              <span>{exportStatusText || 'Đang export...'}</span>
+              <span>{exportProgress}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-teal-100">
+              <div
+                className="h-full rounded-full bg-teal-600 transition-all duration-200"
+                style={{ width: `${Math.max(4, exportProgress)}%` }}
+              />
+            </div>
+          </div>
         )}
         <div className="flex flex-wrap gap-2">
           <button
