@@ -1,6 +1,40 @@
 # Runbook
 
-## 1) Local Development
+## 1) Quick Commands
+
+Local backend:
+
+```bash
+mvn spring-boot:run
+```
+
+Local frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Deploy script (dry-run):
+
+```bash
+python scripts/deploy_prod.py --dry-run --print-json
+```
+
+Live smoke:
+
+```bash
+BASE_URL=http://192.168.1.200 USERNAME=admin1 PASSWORD='***' scripts/smoke/live-smoke.sh
+```
+
+Generate release docs + changelog draft:
+
+```bash
+python scripts/new_release_note.py --version 2.8.0 --update-changelog
+```
+
+## 2) Local Development
 
 ```bash
 mvn test
@@ -15,7 +49,7 @@ npm install
 npm run dev
 ```
 
-## 2) Docker Local
+## 3) Docker Local
 
 ```bash
 cp .env.example .env
@@ -30,7 +64,7 @@ Health check:
 - Frontend: `http://localhost/`
 - MailHog: `http://localhost:8025`
 
-## 3) Production-like Deploy (Ubuntu)
+## 4) Production-like Deploy (Ubuntu)
 
 ```bash
 cd ~/sales-management-deploy/current
@@ -39,7 +73,7 @@ docker compose ps
 docker logs -f sales-app
 ```
 
-## 4) Live Smoke
+## 5) Live Smoke
 
 ```bash
 BASE_URL=http://192.168.1.200 USERNAME=admin1 PASSWORD='***' scripts/smoke/live-smoke.sh
@@ -54,7 +88,7 @@ Script checks:
 - `orderItemId` contract on order detail (if data exists)
 - Staff forbidden on low-stock (403)
 
-## 5) GitHub Actions Workflows
+## 6) GitHub Actions Workflows
 
 ### CI (`.github/workflows/ci.yml`)
 
@@ -94,7 +128,7 @@ Script checks:
 	- `CHANGELOG.generated.md` (nếu bật `update_changelog`)
 - Dùng khi cần tạo trước release docs để review trước khi commit vào repo.
 
-## 6) Rollback
+## 7) Rollback
 
 1. Trên server, rollback source theo bản lưu trước đó.
 2. Rebuild lại app service:
@@ -106,7 +140,7 @@ docker compose up -d --build app
 
 3. Chạy smoke script để xác nhận sau rollback.
 
-## 7) Backup / Restore PostgreSQL
+## 8) Backup / Restore PostgreSQL
 
 Backup:
 
@@ -120,7 +154,7 @@ Restore:
 cat backup.sql | docker exec -i sales-postgres psql -U postgres -d sales_management
 ```
 
-## 8) Release Checklist
+## 9) Release Checklist
 
 ### Pre-release
 
@@ -143,4 +177,4 @@ python scripts/new_release_note.py --version 2.8.0 --update-changelog
 2. Kiểm tra health backend/frontend và trạng thái container.
 3. Kiểm tra nhanh chức năng trọng yếu: login, products list, order flow cơ bản.
 4. Theo dõi log app trong 10-15 phút đầu để phát hiện lỗi runtime.
-5. Nếu có lỗi nghiêm trọng: rollback theo mục 6 và chạy smoke lại.
+5. Nếu có lỗi nghiêm trọng: rollback theo mục 7 và chạy smoke lại.
