@@ -13,12 +13,67 @@ import { useAuth } from '../contexts/AuthContext'
 
 const MAX_IMAGE_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024
 const MAX_IMPORT_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
+const REQUIRED_IMPORT_HEADERS = ['sku', 'name', 'price', 'stockquantity'] as const
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024 * 1024) {
     return `${(bytes / 1024).toFixed(1)} KB`
   }
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function parseCsvRow(line: string): string[] {
+  const cols: string[] = []
+  let current = ''
+  let inQuotes = false
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i]
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"'
+        i += 1
+      } else {
+        inQuotes = !inQuotes
+      }
+      continue
+    }
+    if (char === ',' && !inQuotes) {
+      cols.push(current.trim())
+      current = ''
+      continue
+    }
+    current += char
+  }
+  cols.push(current.trim())
+  return cols
+}
+
+async function validateImportCsv(file: File): Promise<{ ok: boolean; message?: string }> {
+  const content = await file.text()
+  const lines = content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+
+  if (lines.length === 0) {
+    return { ok: false, message: 'File CSV trống hoặc không có header hợp lệ.' }
+  }
+
+  const headers = parseCsvRow(lines[0]).map((header) => header.toLowerCase())
+  const missing = REQUIRED_IMPORT_HEADERS.filter((header) => !headers.includes(header))
+  if (missing.length > 0) {
+    return {
+      ok: false,
+      message: `Thiếu header bắt buộc: ${missing.join(', ')}.`,
+    }
+  }
+
+  if (lines.length < 2) {
+    return { ok: false, message: 'CSV chưa có dòng dữ liệu sản phẩm.' }
+  }
+
+  return { ok: true }
 }
 
 function ProductForm({ defaultValues, onSubmit, isPending }: {
@@ -286,6 +341,7 @@ export default function ProductsPage() {
   const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null)
   const [selected, setSelected] = useState<Product | null>(null)
   const [importing, setImporting] = useState(false)
+  const [importFileLabel, setImportFileLabel] = useState('')
   const importInputRef = useRef<HTMLInputElement | null>(null)
 
   const parseNumberFilter = (value: string) => {
@@ -399,6 +455,17 @@ export default function ProductsPage() {
       return
     }
 
+    setImportFileLabel(`${file.name} (${formatFileSize(file.size)})`)
+    const csvValidation = await validateImportCsv(file)
+    if (!csvValidation.ok) {
+      showToast({
+        tone: 'error',
+        title: 'CSV chưa hợp lệ để import',
+        message: csvValidation.message ?? 'Vui lòng kiểm tra lại header và dữ liệu CSV.',
+      })
+      return
+    }
+
     setImporting(true)
     try {
       const formData = new FormData()
@@ -419,6 +486,9 @@ export default function ProductsPage() {
           ? `Thanh cong ${summary.importedRows}/${summary.totalRows}. Loi: ${errorPreview || 'Khong ro nguyen nhan.'}`
           : `Da import ${summary.importedRows}/${summary.totalRows} san pham.`,
       })
+      if (summary.failedRows === 0) {
+        setImportFileLabel('')
+      }
     } catch (error) {
       showToast({
         tone: 'error',
@@ -484,6 +554,13 @@ export default function ProductsPage() {
           />
         </div>
       </div>
+
+      {isAdmin && (
+        <div className="rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-xs text-gray-600">
+          <p className="font-semibold text-gray-700">Import CSV yêu cầu header: sku, name, price, stockquantity.</p>
+          <p className="mt-1">{importFileLabel ? `File đã chọn: ${importFileLabel}` : 'Chưa chọn file import.'}</p>
+        </div>
+      )}
 
       <div className="grid gap-3 md:grid-cols-5">
         <select
