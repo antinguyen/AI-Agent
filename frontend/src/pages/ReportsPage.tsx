@@ -164,9 +164,11 @@ export default function ReportsPage() {
         </div>
       </section>
 
-      <section className="panel-soft sticky top-4 z-10 rounded-3xl p-5 space-y-4">
+      <section className="panel-soft md:sticky md:top-4 md:z-10 rounded-3xl p-5 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Doanh thu theo thời gian</h3>
-        {(revenueError || topError || summaryError) && <p className="text-sm text-rose-600">{pageErrorMessage}</p>}
+        {(revenueError || topError || summaryError) && (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{pageErrorMessage}</div>
+        )}
         <div className="grid gap-3 md:grid-cols-3 md:items-end">
           <div>
             <label className="text-sm font-medium text-gray-700">Từ ngày</label>
@@ -251,7 +253,13 @@ export default function ReportsPage() {
       <section className="grid gap-5 lg:grid-cols-2">
         <div className="panel-soft rounded-3xl p-5 space-y-3">
           <h3 className="text-lg font-semibold text-gray-900">Top sản phẩm</h3>
-          {topLoading && <p className="text-sm text-gray-500">Đang tải top sản phẩm...</p>}
+          {topLoading && (
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="crm-skeleton-block h-12 rounded-2xl" />
+              ))}
+            </div>
+          )}
           {topProducts.map((p) => (
             <div key={p.productId} className="rounded-2xl bg-white/80 border border-stone-200 px-4 py-3 text-sm">
               <div className="flex items-center justify-between gap-3">
@@ -261,12 +269,18 @@ export default function ReportsPage() {
               <p className="text-gray-500 mt-1">{p.sku} · SL bán: {p.totalQuantitySold}</p>
             </div>
           ))}
-          {topProducts.length === 0 && <p className="text-sm text-gray-500">Chưa có dữ liệu bán hàng.</p>}
+          {topProducts.length === 0 && <div className="crm-empty-card text-sm">Chưa có dữ liệu bán hàng.</div>}
         </div>
 
         <div className="panel-soft rounded-3xl p-5 space-y-3">
           <h3 className="text-lg font-semibold text-gray-900">Tổng hợp trạng thái đơn</h3>
-          {summaryLoading && <p className="text-sm text-gray-500">Đang tải tổng hợp trạng thái...</p>}
+          {summaryLoading && (
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="crm-skeleton-block h-12 rounded-2xl" />
+              ))}
+            </div>
+          )}
           <div className="rounded-2xl bg-white/80 border border-stone-200 px-4 py-3 text-sm">
             <p className="text-gray-600">Tổng đơn: <span className="font-semibold text-gray-900">{summary?.totalOrders ?? 0}</span></p>
             <p className="text-gray-600">Tổng doanh thu: <span className="font-semibold text-teal-700">{summary ? formatCurrency(summary.totalRevenue, 'VND') : '—'}</span></p>
@@ -277,7 +291,7 @@ export default function ReportsPage() {
               <span className="font-semibold text-gray-900">{count}</span>
             </div>
           ))}
-          {statuses.length === 0 && <p className="text-sm text-gray-500">Chưa có dữ liệu trạng thái đơn.</p>}
+          {statuses.length === 0 && <div className="crm-empty-card text-sm">Chưa có dữ liệu trạng thái đơn.</div>}
         </div>
       </section>
     </div>
