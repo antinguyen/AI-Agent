@@ -54,7 +54,35 @@ Script checks:
 - `orderItemId` contract on order detail (if data exists)
 - Staff forbidden on low-stock (403)
 
-## 5) Rollback
+## 5) GitHub Actions Workflows
+
+### CI (`.github/workflows/ci.yml`)
+
+- Trigger: `push` vào `master/main/develop`, `pull_request` vào `master/main`.
+- Dùng khi cần kiểm tra tổng hợp trước merge/release:
+	- Deploy CLI regression tests (`scripts/test_deploy_prod_cli.py`)
+	- Maven tests
+	- Docker build smoke
+
+### Deploy CLI Regression (`.github/workflows/deploy-cli-regression.yml`)
+
+- Trigger theo `paths` liên quan deploy script:
+	- `scripts/deploy_prod.py`
+	- `scripts/test_deploy_prod_cli.py`
+	- workflow file tương ứng
+- Dùng khi thay đổi logic deploy, option parser, JSON contract.
+- Mục tiêu: fail nhanh cho phần CLI mà không chờ full Java pipeline.
+
+### Live Smoke (`.github/workflows/live-smoke.yml`)
+
+- Trigger: `workflow_dispatch` (manual).
+- Input:
+	- `base_url` (bắt buộc)
+	- `username` (mặc định `admin1`)
+- Secret bắt buộc: `SMOKE_PASSWORD`.
+- Dùng sau deploy production-like để xác nhận nhanh luồng login + API trọng yếu.
+
+## 6) Rollback
 
 1. Trên server, rollback source theo bản lưu trước đó.
 2. Rebuild lại app service:
@@ -66,7 +94,7 @@ docker compose up -d --build app
 
 3. Chạy smoke script để xác nhận sau rollback.
 
-## 6) Backup / Restore PostgreSQL
+## 7) Backup / Restore PostgreSQL
 
 Backup:
 
